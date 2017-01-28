@@ -11,12 +11,14 @@
 import datetime
 import unittest
 
-from pyLibrary import convert, jsons
 from mo_logs import Log
-from pyDots import Data, wrap
-from pyLibrary.env.elasticsearch import scrub
-from mo_json.encoder import pypy_json_encode as pypy_json_encode, cPythonJSONEncoder, pretty_json
 from mo_times.dates import Date
+from pyDots import Data, wrap
+from pyLibrary import convert
+
+import mo_json
+from mo_json import json2value
+from mo_json.encoder import pypy_json_encode as pypy_json_encode, cPythonJSONEncoder, pretty_json
 
 cpython_json_encoder = cPythonJSONEncoder().encode
 
@@ -82,7 +84,7 @@ class TestJSON(unittest.TestCase):
         expected = u"Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222, 22...\n\t                       ^\n"
         # expected = u'Can not decode JSON at:\n\t...9,270,271,272,273,27|4,275,276,277,278,2...\n\t                       ^\n'
         try:
-            output = convert.json2value(test)
+            output = json2value(test)
             Log.error("Expecting error")
         except Exception, e:
             if e.message != expected:
@@ -91,7 +93,7 @@ class TestJSON(unittest.TestCase):
     def test_whitespace_prefix(self):
         hex = "00 00 00 00 7B 22 74 68 72 65 61 64 22 3A 20 22 4D 61 69 6E 54 68 72 65 61 64 22 2C 20 22 6C 65 76 65 6C 22 3A 20 22 49 4E 46 4F 22 2C 20 22 70 69 64 22 3A 20 31 32 39 33 2C 20 22 63 6F 6D 70 6F 6E 65 6E 74 22 3A 20 22 77 70 74 73 65 72 76 65 22 2C 20 22 73 6F 75 72 63 65 22 3A 20 22 77 65 62 2D 70 6C 61 74 66 6F 72 6D 2D 74 65 73 74 73 22 2C 20 22 74 69 6D 65 22 3A 20 31 34 32 34 31 39 35 30 31 33 35 39 33 2C 20 22 61 63 74 69 6F 6E 22 3A 20 22 6C 6F 67 22 2C 20 22 6D 65 73 73 61 67 65 22 3A 20 22 53 74 61 72 74 69 6E 67 20 68 74 74 70 20 73 65 72 76 65 72 20 6F 6E 20 31 32 37 2E 30 2E 30 2E 31 3A 38 34 34 33 22 7D 0A"
         json = convert.utf82unicode(convert.hex2bytes("".join(hex.split(" "))))
-        self.assertRaises(Exception, convert.json2value, *[json])
+        self.assertRaises(Exception, json2value, *[json])
 
     def test_default_python(self):
 
@@ -147,19 +149,19 @@ class TestJSON(unittest.TestCase):
     def test_nan(self):
         test = float("nan")
         output = pypy_json_encode(test)
-        expecting = cpython_json_encoder(jsons.scrub(test))
+        expecting = cpython_json_encoder(mo_json.scrub(test))
         self.assertEqual(output, expecting, "expecting "+expecting)
 
     def test_inf(self):
         test = float("+inf")
         output = pypy_json_encode(test)
-        expecting = cpython_json_encoder(jsons.scrub(test))
+        expecting = cpython_json_encoder(mo_json.scrub(test))
         self.assertEqual(output, expecting, "expecting "+expecting)
 
     def test_minus_inf(self):
         test = float("-inf")
         output = pypy_json_encode(test)
-        expecting = cpython_json_encoder(jsons.scrub(test))
+        expecting = cpython_json_encoder(mo_json.scrub(test))
         self.assertEqual(output, expecting, "expecting "+expecting)
 
 
