@@ -3,14 +3,14 @@ More JSON Tools!
 
 This set of modules solves three problems:
 
-* JSON encoding is slow (`jsons.encode`)
-* We want to iterate over massive JSON easily (`jsons.stream`)
+* JSON encoding is slow (`mo_json.encode`)
+* We want to iterate over massive JSON easily (`mo_json.stream`)
 
 
-Module `jsons.encode`
+Module `mo_json.encode`
 =====================
 
-Function: `jsons.encode.json_encoder()`
+Function: `mo_json.encode.json_encoder()`
 -------------------------------------
 
 **Update Mar2016 - PyPy version 5.x appears to have improved C integration to
@@ -23,7 +23,7 @@ Fast JSON encoder used in `convert.value2json()` when running in Pypy. Run the
 to compare with default implementation and ujson
 
 
-Module `jsons.stream`
+Module `mo_json.stream`
 =====================
 
 A module supporting the implementation of queries over very large JSON
@@ -49,7 +49,7 @@ restrictions:
    benefit from streaming, and will reside in memory.   
 
 
-Function `jsons.stream.parse()`
+Function `mo_json.stream.parse()`
 -------------------------------
 
 Will return an iterator over all objects found in the JSON stream.
