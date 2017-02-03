@@ -3,29 +3,13 @@ More JSON Tools!
 
 This set of modules solves three problems:
 
-* JSON encoding is slow (`mo_json.encode`)
 * We want to iterate over massive JSON easily (`mo_json.stream`)
 * A bi-jection between strictly typed JSON, and dynamic typed JSON.
-
-
-Module `mo_json.encode`
-=====================
-
-Function: `mo_json.encode.json_encoder()`
--------------------------------------
-
-**Update Mar2016 - PyPy version 5.x appears to have improved C integration to
-the point that the C library callbacks are no longer a significant overhead:
-This pure Python JSON encoder is no longer faster than a compound C/Python
-solution.**   
-
-Fast JSON encoder used in `convert.value2json()` when running in Pypy. Run the
-[speedtest](https://github.com/klahnakoski/pyLibrary/blob/dev/tests/speedtest_json.py)
-to compare with default implementation and ujson
-
+* Flexible JSON parser to handle comments, and other forms
+* <strike>JSON encoding is slow (`mo_json.encode`)</strike>
 
 Module `mo_json.stream`
-=====================
+-----------------------
 
 A module supporting the implementation of queries over very large JSON
 strings. The overall objective is to make a large JSON document appear like
@@ -50,8 +34,7 @@ restrictions:
    benefit from streaming, and will reside in memory.   
 
 
-Function `mo_json.stream.parse()`
--------------------------------
+###Function `mo_json.stream.parse()`
 
 Will return an iterator over all objects found in the JSON stream.
 
@@ -65,7 +48,7 @@ Will return an iterator over all objects found in the JSON stream.
   required (all other properties are ignored)
 
 
-###Examples
+####Examples
 
 **Simple Iteration**
 
@@ -140,7 +123,7 @@ produce a result.
 
 
 Module `typed_encoder`
-=====================
+----------------------
 
 
 One reason NoSQL documents stores are wonderful is the fact their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
@@ -157,14 +140,12 @@ Typed JSON uses `$value` and `$object` properties to markup the original JSON:
 Of course, the typed JSON has a different form than the original, and queries into the documents store must take this into account. Fortunately, the use of typed JSON is intended to be hidden behind a query abstraction layer.
 
 
-Function `typed_encode()`
-------------------------
+### Function `typed_encode()`
 
 Accepts a `dict`, `list`, or primitive value, and generates the typed JSON that can be inserted into a document store.
 
 
-Function `json2typed()`
------------------------
+### Function `json2typed()`
 
 Converts an existing JSON unicode string and returns the typed JSON unicode string for the same.
 
@@ -173,3 +154,18 @@ Converts an existing JSON unicode string and returns the typed JSON unicode stri
 ---
 
 also see [http://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html](http://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html)
+
+Module `mo_json.encode`
+-----------------------
+
+###Function: `mo_json.encode.json_encoder()`
+
+**Update Mar2016** - *PyPy version 5.x appears to have improved C integration to
+the point that the C library callbacks are no longer a significant overhead:
+This pure Python JSON encoder is no longer faster than a compound C/Python
+solution.*
+
+Fast JSON encoder used in `convert.value2json()` when running in Pypy. Run the
+[speedtest](https://github.com/klahnakoski/pyLibrary/blob/dev/tests/speedtest_json.py)
+to compare with default implementation and ujson
+

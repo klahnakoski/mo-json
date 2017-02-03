@@ -52,7 +52,7 @@ setup(
     url='https://github.com/klahnakoski/mo-json',
     license='MPL 2.0',
     packages=find_packages(".", lib_prefix=""),
-    install_requires=[],
+    install_requires=['mo-dots','mo-logs','mo-times'],
     include_package_data=True,
     zip_safe=False,
     classifiers=[  #https://pypi.python.org/pypi?%3Aaction=list_classifiers
