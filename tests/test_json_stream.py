@@ -156,9 +156,22 @@ class TestJsonStream(FuzzyTestCase):
         ]}
         """
         json = slow_stream(source)
-        expected = json2value(source)
+        expected = [{"builds": {
+            "requesttime": 1444681804,
+            "starttime": 1444681806,
+            "endtime": 1444699317,
+            "reason": "The Nightly scheduler named 'mozilla-inbound periodic' triggered this build",
+            "properties": {
+                "request_times": {
+                    "83875568": 1444681804
+                },
+                "slavename": "b-2008-ix-0099",
+                "log_url": "http://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-win64-pgo/1444681804/mozilla-inbound-win64-pgo-bm84-build1-build460.txt.gz",
+                "buildername": "WINNT 6.1 x86-64 mozilla-inbound pgo-build"
+            }
+        }}]
 
-        for j in stream.parse(
+        result = list(stream.parse(
             json,
             "builds",
             [
@@ -171,8 +184,8 @@ class TestJsonStream(FuzzyTestCase):
                 "builds.properties.log_url",
                 "builds.properties.buildername"
             ]
-        ):
-            Log.note("{{json|json}}", json=j)
+        ))
+        self.assertEqual(result, expected)
 
     def test_constants(self):
         #                    01234567890123456789012345678901234567890123456789012345678901234567890123456789
@@ -189,6 +202,26 @@ class TestJsonStream(FuzzyTestCase):
             {"name": "a", "value": 1},
             {"name": "b", "value": 2},
             {"name": "c", "value": 3}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_nested_primitives(self):
+        json = slow_stream('{"u": "a", "t": [1, 2, 3]}')
+        result = list(stream.parse(json, "t", expected_vars={"t", "u"}))
+        expected = [
+            {"u": "a", "t": 1},
+            {"u": "a", "t": 2},
+            {"u": "a", "t": 3}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_select_no_items(self):
+        json = slow_stream('{"a": 1, "b": 2, "c": 3}')
+        result = list(stream.parse(json, {"items": "."}, expected_vars={}))
+        expected = [
+            {},
+            {},
+            {}
         ]
         self.assertEqual(result, expected)
 
@@ -212,6 +245,11 @@ class TestJsonStream(FuzzyTestCase):
         ]
         self.assertEqual(result, expected)
 
+    def test_nested_items_w_error(self):
+        json = slow_stream('{"u": "a", "t": [{"a": 1}, {"b": 2}, {"c": 3}], "v":3}')
+        def test():
+            result = list(stream.parse(json, {"items": "t"}, expected_vars={"u", "t.name", "v"}))
+        self.assertRaises(Exception, test)
 
 
 

@@ -63,7 +63,8 @@ def parse(json, query_path, expected_vars=NO_VARS):
     else:
         Log.error("Expecting json to be a stream, or a function that will return more bytes")
 
-    def _decode_list(index, c, parent_path, path, expected_vars):
+
+    def _iterate_list(index, c, parent_path, path, expected_vars):
         if path is None:
             Log.error("not expected")
 
@@ -71,9 +72,11 @@ def parse(json, query_path, expected_vars=NO_VARS):
             # TREAT VALUE AS SINGLE-VALUE ARRAY
             if not path:
                 yield _assign_token(index, c, expected_vars)
+                done[parent_path] = True
             else:
                 for value, index in _decode_token(index, c, parent_path, path, expected_vars):
                     yield index
+                _done(parent_path)
         else:
             c, index = skip_whitespace(index)
             if c == b']':
@@ -85,20 +88,31 @@ def parse(json, query_path, expected_vars=NO_VARS):
                     c, index = skip_whitespace(index)
                     if c == b']':
                         yield index
+                        _done(parent_path)
                         return
                     elif c == b',':
+                        yield index
                         c, index = skip_whitespace(index)
                 else:
                     for index in _decode_token(index, c, parent_path, path, expected_vars):
-                        yield index
-                    c, index = skip_whitespace(index)
-                    if c == b']':
-                        return
-                    elif c == b',':
                         c, index = skip_whitespace(index)
+                        if c == b']':
+                            yield index
+                            _done(parent_path)
+                            return
+                        elif c == b',':
+                            yield index
+                            c, index = skip_whitespace(index)
+
+    def _done(parent_path):
+        if len(parent_path) < len(done[0]):
+            done[0] = parent_path
 
     def _decode_object(index, c, parent_path, query_path, expected_vars):
         if "." in expected_vars:
+            if len(done[0]) <= len(parent_path) and all(d == p for d, p in zip(done[0], parent_path)):
+                Log.error("Can not pick up more variables, iterator is done")
+
             if query_path is not None:
                 Log.error("expected variable {{var}} contains iterable list", var=join_field(parent_path))
 
@@ -128,17 +142,18 @@ def parse(json, query_path, expected_vars=NO_VARS):
                     c, index = skip_whitespace(index)
 
                     child_expected = needed(name, expected_vars)
+                    child_path = parent_path + [name]
                     if not query_path:
                         index = _assign_token(index, c, child_expected)
                     elif query_path[0] == name:
-                        for index in _decode_token(index, c, parent_path + [name], query_path[1:], child_expected):
+                        for index in _decode_token(index, c, child_path, query_path[1:], child_expected):
                             yield index
                     else:
+                        if len(done[0]) <= len(child_path):
+                            Log.error("Can not pick up more variables, iterator is done")
                         index = _assign_token(index, c, child_expected)
                 elif c == "}":
                     break
-
-            yield index
 
     def _decode_object_items(index, c, parent_path, query_path, expected_vars):
         """
@@ -161,19 +176,9 @@ def parse(json, query_path, expected_vars=NO_VARS):
                 c, index = skip_whitespace(index)
 
                 child_expected = needed("value", expected_vars)
-                if any(child_expected):
-                    json.mark(index-1)
-                    index = jump_to_end(index, c)
-                    value = json_decoder(json.release(index).decode("utf8"))
-                    for i, e in enumerate(child_expected):
-                        if e is None:
-                            continue
-                        elif e == ".":
-                            destination[i] = value
-                        else:
-                            destination[i] = value[e]
-                    c, index = skip_whitespace(index)
-                    yield index
+                _assign_token(index, c, child_expected)
+                c, index = skip_whitespace(index)
+                yield index
             elif c == "}":
                 break
 
@@ -193,35 +198,11 @@ def parse(json, query_path, expected_vars=NO_VARS):
                 for index in _decode_object(index, c, parent_path, query_path, expected_vars):
                     yield index
         elif c == b'[':
-            if query_path is not None:
-                for index in _decode_list(index, c, parent_path, query_path, expected_vars):
-                    yield index
-
-            elif any(expected_vars):
-                json.mark(index-1)
-                index = jump_to_end(index, c)
-                value = json_decoder(json.release(index).decode("utf8"))
-                for i, e in enumerate(expected_vars):
-                    if e is None:
-                        continue
-                    elif e == ".":
-                        destination[i] = value
-                    else:
-                        destination[i] = value[e]
-                yield index
-            else:
-                index = jump_to_end(index, c)
+            for index in _iterate_list(index, c, parent_path, query_path, expected_vars):
                 yield index
         else:
-            if "." in expected_vars:
-                value, index = simple_token(index, c)
-                for i, e in enumerate(expected_vars):
-                    if e == ".":
-                        destination[i] = value
-                yield index
-            else:
-                index = jump_to_end(index, c)
-                yield index
+            index = _assign_token(index, c, expected_vars)
+            yield index
 
     def _assign_token(index, c, expected_vars):
         if not any(expected_vars):
@@ -335,20 +316,12 @@ def parse(json, query_path, expected_vars=NO_VARS):
 
     destination = [None] * len(expected_vars)
     c, index = skip_whitespace(0)
+    done = [path_list + [None]]
     for _ in _decode_token(index, c, [], path_list, expected_vars):
         output = Data()
         for i, e in enumerate(expected_vars):
             output[e] = destination[i]
         yield output
-
-
-
-def listwrap(value):
-    if value == None:
-        return []
-    if isinstance(value, list):
-        return value
-    return [value]
 
 
 def needed(name, required):
