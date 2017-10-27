@@ -14,7 +14,7 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from mo_json import stream, json2value
+from mo_json import stream, json2value, value2json
 from mo_logs import Log
 from mo_testing.fuzzytestcase import FuzzyTestCase
 
@@ -25,7 +25,6 @@ class TestJsonStream(FuzzyTestCase):
         result = list(stream.parse(json, "1", ["1.a"]))
         expected = [{"1":{"a": "b"}}]
         self.assertEqual(result, expected)
-
 
     def test_select_nothing_from_many_list(self):
         json = slow_stream('{"1":[{"a":"b"}, {"a":"c"}]}')
@@ -159,7 +158,6 @@ class TestJsonStream(FuzzyTestCase):
         json = slow_stream(source)
         expected = json2value(source)
 
-
         for j in stream.parse(
             json,
             "builds",
@@ -183,6 +181,38 @@ class TestJsonStream(FuzzyTestCase):
         result = list(stream.parse(json, None, ["."]))
         expected = [True, False, None, 42, 3.14, u"hello world", u"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"]
         self.assertEqual(result, expected)
+
+    def test_object_items(self):
+        json = slow_stream('{"a": 1, "b": 2, "c": 3}')
+        result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
+        expected = [
+            {"name": "a", "value": 1},
+            {"name": "b", "value": 2},
+            {"name": "c", "value": 3}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_array_object_items(self):
+        json = slow_stream('[{"a": 1}, {"b": 2}, {"c": 3}]')
+        result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
+        expected = [
+            {"name": "a", "value": 1},
+            {"name": "b", "value": 2},
+            {"name": "c", "value": 3}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_nested_items(self):
+        json = slow_stream('{"u": "a", "t": [{"a": 1}, {"b": 2}, {"c": 3}]}')
+        result = list(stream.parse(json, {"items": "t"}, expected_vars={"u", "t.name", "t.value"}))
+        expected = [
+            {"u": "a", "t": {"name": "a", "value": 1}},
+            {"u": "a", "t": {"name": "b", "value": 2}},
+            {"u": "a", "t": {"name": "c", "value": 3}}
+        ]
+        self.assertEqual(result, expected)
+
+
 
 
 def slow_stream(bytes):
