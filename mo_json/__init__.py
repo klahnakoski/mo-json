@@ -29,7 +29,8 @@ from mo_logs.strings import expand_template
 from mo_times import Date, Duration
 
 
-FIND_LOOPS = True
+FIND_LOOPS = False
+CAN_NOT_DECODE_JSON = "Can not decode JSON"
 
 _get = object.__getattribute__
 
@@ -115,21 +116,21 @@ def _scrub(value, is_done, stack, keep_whitespace):
     elif type_ is float:
         if math.isnan(value) or math.isinf(value):
             return None
-        return value
+        return _scrub_float(value)
     elif type_ in (int, long, bool):
         return value
     elif type_ in (date, datetime):
-        return float(datetime2unix(value))
+        return _scrub_float(datetime2unix(value))
     elif type_ is timedelta:
         return value.total_seconds()
     elif type_ is Date:
-        return float(value.unix)
+        return _scrub_float(value.unix)
     elif type_ is Duration:
-        return float(value.seconds)
+        return _scrub_float(value.seconds)
     elif type_ is str:
         return utf82unicode(value)
     elif type_ is Decimal:
-        return float(value)
+        return _scrub_float(value)
     elif type_ is Data:
         return _scrub(_get(value, '_dict'), is_done, stack, keep_whitespace=keep_whitespace)
     elif isinstance(value, Mapping):
@@ -185,6 +186,16 @@ def _scrub(value, is_done, stack, keep_whitespace):
         return repr(value)
     else:
         return _scrub(DataObject(value), is_done, stack, keep_whitespace=keep_whitespace)
+
+
+def _scrub_float(value):
+    d = float(value)
+    i_d = int(d)
+    if float(i_d) == d:
+        return i_d
+    else:
+        return d
+
 
 
 def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
@@ -299,7 +310,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
             if len(sample) > 43:
                 sample = sample[:43] + "..."
 
-            Log.error("Can not decode JSON at:\n\t" + sample + "\n\t" + pointer + "\n")
+            Log.error(CAN_NOT_DECODE_JSON + " at:\n\t{{sample}}\n\t{{pointer}}\n", sample=sample, pointer=pointer)
 
         base_str = strings.limit(json_string, 1000).encode('utf8')
         hexx_str = bytes2hex(base_str, " ")
@@ -307,7 +318,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
             char_str = " " + "  ".join((c.decode("latin1") if ord(c) >= 32 else ".") for c in base_str)
         except Exception as e:
             char_str = " "
-        Log.error("Can not decode JSON:\n" + char_str + "\n" + hexx_str + "\n", e)
+        Log.error(CAN_NOT_DECODE_JSON + ":\n{{char_str}}\n{{hexx_str}}\n", char_str=char_str, hexx_str=hexx_str, cause=e)
 
 
 def bytes2hex(value, separator=" "):
