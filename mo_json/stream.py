@@ -42,13 +42,15 @@ def parse(json, query_path, expected_vars=NO_VARS):
 
     LARGE MANY-PROPERTY OBJECTS CAN BE HANDLED BY `items()`
 
-    :param json: SOME STRING-LIKE STRUCTURE THAT CAN ASSUME WE LOOK AT ONE
-                 CHARACTER AT A TIME, IN ORDER
-    :param query_path: AN ARRAY OF DOT-SEPARATED STRINGS INDICATING THE
-                 NESTED ARRAY BEING ITERATED.
+    :param json:       SOME STRING-LIKE STRUCTURE THAT CAN ASSUME WE LOOK AT
+                       ONE CHARACTER AT A TIME, IN ORDER
+    :param query_path: A DOT-SEPARATED STRING INDICATING THE PATH TO THE
+                       NESTED ARRAY OPTIONALLY, {"items":query_path} TO
+                       FURTHER ITERATE OVER PROPERTIES OF OBJECTS FOUND AT
+                       query_path
     :param expected_vars: REQUIRED PROPERTY NAMES, USED TO DETERMINE IF
                           MORE-THAN-ONE PASS IS REQUIRED
-    :return: RETURNS AN ITERATOR OVER ALL OBJECTS FROM NESTED path IN LEAF FORM
+    :return: RETURNS AN ITERATOR OVER ALL OBJECTS FROM ARRAY LOCATED AT query_path
     """
     if hasattr(json, "read"):
         # ASSUME IT IS A STREAM
