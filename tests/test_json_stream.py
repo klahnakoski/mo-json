@@ -14,9 +14,10 @@ from __future__ import unicode_literals
 
 from io import BytesIO
 
-from mo_json import stream, json2value, value2json
-from mo_logs import Log
+from mo_dots import Null
 from mo_testing.fuzzytestcase import FuzzyTestCase
+
+from mo_json import stream
 
 
 class TestJsonStream(FuzzyTestCase):
@@ -244,6 +245,76 @@ class TestJsonStream(FuzzyTestCase):
             {"u": "a", "t": {"name": "c", "value": 3}}
         ]
         self.assertEqual(result, expected)
+
+    def test_empty(self):
+        json = slow_stream('{"u": "a", "t": []}')
+        result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
+        expected = [
+            {"u": "a", "t": Null}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_miss_item_in_list(self):
+        json = slow_stream('{"u": "a", "t": ["k", null, "m"]}')
+        result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
+        expected = [
+            {"u": "a", "t": "k"},
+            {"u": "a", "t": Null},
+            {"u": "a", "t": "m"}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_ignore_elements_of_list(self):
+        json = slow_stream('{"u": "a", "t": ["k", null, "m"]}')
+        result = list(stream.parse(json, "t", expected_vars={"u"}))
+        expected = [
+            {"u": "a"},
+            {"u": "a"},
+            {"u": "a"}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_bad_item_in_list(self):
+        json = slow_stream('{"u": "a", "t": ["k", None, "m"]}')
+
+        def output():
+            list(stream.parse(json, "t", expected_vars={"u", "t"}))
+        self.assertRaises(Exception, output)
+
+    def test_object_instead_of_list(self):
+        json = slow_stream('{"u": "a", "t": "k"}')
+
+        result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
+        expected = [
+            {"u": "a", "t": "k"}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_simple(self):
+        json = slow_stream('{"u": "a"}')
+
+        result = list(stream.parse(json, ".", expected_vars={"."}))
+        expected = [
+            {"u": "a"}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_missing_array(self):
+        json = slow_stream('{"u": "a"}')
+
+        result = list(stream.parse(json, "t", expected_vars={"u"}))
+        expected = [
+            {"u": "a"}
+        ]
+        self.assertEqual(result, expected)
+
+    def test_not_used_array(self):
+        json = slow_stream('{"u": "a", "t": ["k", null, "m"]}')
+
+        def output():
+            list(stream.parse(json, "t", expected_vars={"."}))
+
+        self.assertRaises(Exception, output)
 
     def test_nested_items_w_error(self):
         json = slow_stream('{"u": "a", "t": [{"a": 1}, {"b": 2}, {"c": 3}], "v":3}')

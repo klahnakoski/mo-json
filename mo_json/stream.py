@@ -65,26 +65,24 @@ def parse(json, query_path, expected_vars=NO_VARS):
 
 
     def _iterate_list(index, c, parent_path, path, expected_vars):
-        if path is None:
-            Log.error("not expected")
+        c, index = skip_whitespace(index)
+        if c == b']':
+            yield index
+            return
 
-        if c != b"[":
-            # TREAT VALUE AS SINGLE-VALUE ARRAY
+        while True:
             if not path:
-                yield _assign_token(index, c, expected_vars)
-                done[parent_path] = True
-            else:
-                for value, index in _decode_token(index, c, parent_path, path, expected_vars):
+                index = _assign_token(index, c, expected_vars)
+                c, index = skip_whitespace(index)
+                if c == b']':
                     yield index
-                _done(parent_path)
-        else:
-            c, index = skip_whitespace(index)
-            if c == b']':
-                yield index
-
-            while True:
-                if not path:
-                    index = _assign_token(index, c, expected_vars)
+                    _done(parent_path)
+                    return
+                elif c == b',':
+                    yield index
+                    c, index = skip_whitespace(index)
+            else:
+                for index in _decode_token(index, c, parent_path, path, expected_vars):
                     c, index = skip_whitespace(index)
                     if c == b']':
                         yield index
@@ -93,16 +91,6 @@ def parse(json, query_path, expected_vars=NO_VARS):
                     elif c == b',':
                         yield index
                         c, index = skip_whitespace(index)
-                else:
-                    for index in _decode_token(index, c, parent_path, path, expected_vars):
-                        c, index = skip_whitespace(index)
-                        if c == b']':
-                            yield index
-                            _done(parent_path)
-                            return
-                        elif c == b',':
-                            yield index
-                            c, index = skip_whitespace(index)
 
     def _done(parent_path):
         if len(parent_path) < len(done[0]):
@@ -113,47 +101,60 @@ def parse(json, query_path, expected_vars=NO_VARS):
             if len(done[0]) <= len(parent_path) and all(d == p for d, p in zip(done[0], parent_path)):
                 Log.error("Can not pick up more variables, iterator is done")
 
-            if query_path is not None:
-                Log.error("expected variable {{var}} contains iterable list", var=join_field(parent_path))
+            if query_path:
+                Log.error("Can not extract objects that contain the iteration", var=join_field(query_path))
 
-            json.mark(index-1)
-            index = jump_to_end(index, c)
-            value = json_decoder(json.release(index).decode("utf8"))
-            for i, e in enumerate(expected_vars):
-                if e is None:
-                    continue
-                elif e == ".":
-                    destination[i] = value
-                else:
-                    destination[i] = value[e]
-            c, index = skip_whitespace(index)
+            index = _assign_token(index, c, expected_vars)
+            # c, index = skip_whitespace(index)
             yield index
-        else:
-            while True:
+            return
+
+        did_yield = False
+        while True:
+            c, index = skip_whitespace(index)
+            if c == b',':
+                continue
+            elif c == b'"':
+                name, index = simple_token(index, c)
+
                 c, index = skip_whitespace(index)
-                if c == b',':
-                    continue
-                elif c == b'"':
-                    name, index = simple_token(index, c)
+                if c != b':':
+                    Log.error("Expecting colon")
+                c, index = skip_whitespace(index)
 
-                    c, index = skip_whitespace(index)
-                    if c != b':':
-                        Log.error("Expecting colon")
-                    c, index = skip_whitespace(index)
-
-                    child_expected = needed(name, expected_vars)
-                    child_path = parent_path + [name]
+                child_expected = needed(name, expected_vars)
+                child_path = parent_path + [name]
+                if any(child_expected):
                     if not query_path:
                         index = _assign_token(index, c, child_expected)
                     elif query_path[0] == name:
                         for index in _decode_token(index, c, child_path, query_path[1:], child_expected):
+                            did_yield = True
                             yield index
                     else:
                         if len(done[0]) <= len(child_path):
-                            Log.error("Can not pick up more variables, iterator is done")
+                            Log.error("Can not pick up more variables, iterator over {{path}} is done", path=join_field(done[0]))
                         index = _assign_token(index, c, child_expected)
-                elif c == "}":
-                    break
+                elif query_path and query_path[0] == name:
+                    for index in _decode_token(index, c, child_path, query_path[1:], child_expected):
+                        yield index
+                else:
+                    index = jump_to_end(index, c)
+            elif c == "}":
+                if not did_yield:
+                    yield index
+                break
+
+    def set_destination(expected_vars, value):
+        for i, e in enumerate(expected_vars):
+            if e is None:
+                pass
+            elif e == ".":
+                destination[i] = value
+            elif isinstance(value, Mapping):
+                destination[i] = value[e]
+            else:
+                destination[i] = Null
 
     def _decode_object_items(index, c, parent_path, query_path, expected_vars):
         """
@@ -209,15 +210,7 @@ def parse(json, query_path, expected_vars=NO_VARS):
             return jump_to_end(index, c)
 
         value, index = simple_token(index, c)
-        for i, e in enumerate(expected_vars):
-            if e is None:
-                continue
-            elif e == ".":
-                destination[i] = value
-            elif isinstance(value, Mapping):
-                destination[i] = value[e]
-            else:
-                destination[i] = Null
+        set_destination(expected_vars, value)
 
         return index
 
@@ -297,7 +290,11 @@ def parse(json, query_path, expected_vars=NO_VARS):
                 if c in b',]}':
                     break
                 index += 1
-            return float(json.release(index)), index
+            text = json.release(index)
+            try:
+                return float(text), index
+            except Exception:
+                Log.error("Not a known JSON primitive: {{text|quote}}", text=text)
 
     def skip_whitespace(index):
         """
