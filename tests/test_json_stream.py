@@ -322,6 +322,15 @@ class TestJsonStream(FuzzyTestCase):
             result = list(stream.parse(json, {"items": "t"}, expected_vars={"u", "t.name", "v"}))
         self.assertRaises(Exception, test)
 
+    def test_values_are_arrays(self):
+        json = slow_stream('{"AUTHORS": ["mozilla.org", "Licensing"], "CLOBBER": ["Core", "Build Config"]}')
+        result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
+        expected = [
+            {"name": "AUTHORS", "value": ["mozilla.org", "Licensing"]},
+            {"name": "CLOBBER", "value": ["Core", "Build Config"]}
+        ]
+        self.assertEqual(result, expected)
+
 
 
 def slow_stream(bytes):

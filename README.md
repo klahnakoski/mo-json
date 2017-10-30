@@ -132,9 +132,9 @@ Module `typed_encoder`
 ----------------------
 
 
-One reason NoSQL documents stores are wonderful is the fact their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
+One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
 
-This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property value. This allows storage of values with no containing object!
+This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This allows storage of values with no containing object!
 
 ###How it works
 

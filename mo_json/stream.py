@@ -15,11 +15,12 @@ import json
 from collections import Mapping
 from types import GeneratorType
 
+from mo_dots import split_field, startswith_field, relative_field, Data, join_field, Null, wrap
 from mo_logs import Log
-from mo_dots import split_field, startswith_field, relative_field, concat_field, Data, join_field, Null, wrap
+
+DEBUG = False
 
 MIN_READ_SIZE = 8*1024
-DEBUG = False
 WHITESPACE = b" \n\r\t"
 CLOSE = {
     b"{": b"}",
@@ -163,6 +164,7 @@ def parse(json, query_path, expected_vars=NO_VARS):
         ITERATE THROUGH THE PROPERTIES OF AN OBJECT
         """
         c, index = skip_whitespace(index)
+        num_items = 0
         while True:
             if c == b',':
                 c, index = skip_whitespace(index)
@@ -179,9 +181,12 @@ def parse(json, query_path, expected_vars=NO_VARS):
                 c, index = skip_whitespace(index)
 
                 child_expected = needed("value", expected_vars)
-                _assign_token(index, c, child_expected)
+                index = _assign_token(index, c, child_expected)
                 c, index = skip_whitespace(index)
+                if DEBUG and not num_items % 1000:
+                    Log.note("{{num}} items iterated", num=num_items)
                 yield index
+                num_items += 1
             elif c == "}":
                 break
 

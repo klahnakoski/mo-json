@@ -198,4 +198,3 @@ class TestJSON(unittest.TestCase):
         expected = u'{"$object":".","a":[],"b":{"$value":1}}'
         self.assertEqual(test1, expected)
         self.assertEqual(test2, expected)
-
