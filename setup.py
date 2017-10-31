@@ -40,11 +40,9 @@ def find_packages(where='.', lib_prefix='', exclude=()):
     return out
 
 
-
-
 setup(
     name='mo-json',
-    version="1.0.17236",
+    version="1.2.17236",
     description='More JSON Tools! ',
     long_description=long_desc,
     author='Kyle Lahnakoski',
