@@ -1,40 +1,30 @@
-More JSON Tools!
-================
+# More JSON Tools!
 
 This set of modules solves three problems:
 
 * We want to iterate over massive JSON easily (`mo_json.stream`)
-* A bi-jection between strictly typed JSON, and dynamic typed JSON.
+* A bijection between strictly typed JSON, and dynamic typed JSON.
 * Flexible JSON parser to handle comments, and other forms
 * <strike>JSON encoding is slow (`mo_json.encode`)</strike>
 
-Module `mo_json.stream`
------------------------
+## Module `mo_json.stream`
 
-A module supporting the implementation of queries over very large JSON
+A module that supports queries over very large JSON
 strings. The overall objective is to make a large JSON document appear like
 a hierarchical database, where arrays of any depth, can be queried like
 tables. 
 
+
 ### Limitations
 
-This is not a generic streaming JSON parser. This module has two main
-restrictions:
+This is not a generic streaming JSON parser. It is only intended to breakdown the top-level array, or object for less memory usage.  
 
-1. **Objects are not streamed** - All objects will reside in memory. Large 
-   objects, with a multitude of properties, may cause problems. Property 
-   names should be known at query time. If you must serialize large objects; 
-   instead of `{<name>: <value>}` format, try a list of name/value pairs 
-   instead: `[{"name": <name>, "value": <value>}]` This format is easier to 
-   query, and gentler on the various document stores that you may put this 
-   data into.
-2. **Array values must be the last object property** - If you query into a 
+*  **Array values must be the last object property** - If you query into a 
    nested array, all sibling properties found after that array must be ignored 
-   (must not be in the `expected_vars`). If not, then those arrays will not 
-   benefit from streaming, and will reside in memory.   
+   (must not be in the `expected_vars`). The code will raise an exception if
+   you can not extract all expected variables.
 
-
-###Function `mo_json.stream.parse()`
+###Function `parse()`
 
 Will return an iterator over all objects found in the JSON stream.
 
@@ -42,11 +32,10 @@ Will return an iterator over all objects found in the JSON stream.
 
 * **json** - a parameter-less function, when called returns some number of
   bytes from the JSON stream. It can also be a string.
-* **path** - a list of strings specifying the nested JSON paths. Use 
+* **path** - a dot-delimited string specifying the path to the nested JSON. Use 
   `"."` if your JSON starts with `[`, and is a list.
 * **expected_vars** - a list of strings specifying the full property names 
   required (all other properties are ignored)
-
 
 ####Examples
 
@@ -121,14 +110,31 @@ produce a result.
 	{"o": 2, "a": {"b": 5}}
 	{"o": 3}
 
+**Large top-level objects**
+
+Some JSON is a single large object, rather than an array of objects. In these cases, you can use the `items` operator to iterate through all name/value pairs of an object:
+
+	json = {
+		"a": "test",
+		"b": 2,
+		"c": [1, 2]
+	}
+	parse(json, {"items":"."}, {"name", "value"})   
+
+produces an iterator of
+
+	{"name": "a", "value":"test"} 
+	{"name": "b", "value":2} 
+	{"name": "c", "value":[1,2]} 
+
 
 Module `typed_encoder`
 ----------------------
 
 
-One reason NoSQL documents stores are wonderful is the fact their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
+One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
 
-This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property value. This allows storage of values with no containing object!
+This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This allows storage of values with no containing object!
 
 ###How it works
 
