@@ -25,13 +25,15 @@ def find_packages(where='.', lib_prefix='', exclude=()):
     SNAGGED FROM distribute-0.6.49-py2.7.egg/setuptools/__init__.py
     """
     out = []
-    stack=[(convert_path(where), lib_prefix)]
+    stack = [(convert_path(where), lib_prefix)]
     while stack:
         where,prefix = stack.pop(0)
         for name in os.listdir(where):
             fn = os.path.join(where,name)
-            if ('.' not in name and os.path.isdir(fn) and
-                os.path.isfile(os.path.join(fn,'__init__.py'))
+            if (
+                '.' not in name and
+                os.path.isdir(fn) and
+                os.path.isfile(os.path.join(fn, '__init__.py'))
             ):
                 out.append(prefix+name); stack.append((fn,prefix+name+'.'))
     for pat in list(exclude)+['ez_setup', 'distribute_setup']:
