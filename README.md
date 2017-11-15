@@ -24,7 +24,7 @@ This is not a generic streaming JSON parser. It is only intended to breakdown th
    (must not be in the `expected_vars`). The code will raise an exception if
    you can not extract all expected variables.
 
-###Function `parse()`
+## Method `mo_json.stream.parse()`
 
 Will return an iterator over all objects found in the JSON stream.
 
@@ -37,7 +37,30 @@ Will return an iterator over all objects found in the JSON stream.
 * **expected_vars** - a list of strings specifying the full property names 
   required (all other properties are ignored)
 
-####Examples
+### Common Usage
+
+The most common use of `parse()` is to iterate over all the objects in a large, top-level, array:
+
+	parse(json, path=".", required_vars=["."]}
+
+For example, given the following JSON: 
+
+	[
+		{"a": 1},
+		{"a": 2},
+		{"a": 3},
+		{"a": 4}
+	]
+
+returns a generator that provides
+
+	{"a": 1}
+	{"a": 2}
+	{"a": 3}
+	{"a": 4}
+
+
+### Examples
 
 **Simple Iteration**
 
@@ -132,9 +155,9 @@ Module `typed_encoder`
 ----------------------
 
 
-One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; with endless schema modifications.
+One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; toiling over endless schema modifications.
 
-This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This allows storage of values with no containing object!
+This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This also enables the storage of values with no containing object!
 
 ###How it works
 

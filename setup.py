@@ -25,13 +25,15 @@ def find_packages(where='.', lib_prefix='', exclude=()):
     SNAGGED FROM distribute-0.6.49-py2.7.egg/setuptools/__init__.py
     """
     out = []
-    stack=[(convert_path(where), lib_prefix)]
+    stack = [(convert_path(where), lib_prefix)]
     while stack:
         where,prefix = stack.pop(0)
         for name in os.listdir(where):
             fn = os.path.join(where,name)
-            if ('.' not in name and os.path.isdir(fn) and
-                os.path.isfile(os.path.join(fn,'__init__.py'))
+            if (
+                '.' not in name and
+                os.path.isdir(fn) and
+                os.path.isfile(os.path.join(fn, '__init__.py'))
             ):
                 out.append(prefix+name); stack.append((fn,prefix+name+'.'))
     for pat in list(exclude)+['ez_setup', 'distribute_setup']:
@@ -42,7 +44,7 @@ def find_packages(where='.', lib_prefix='', exclude=()):
 
 setup(
     name='mo-json',
-    version="1.2.17304",
+    version="2.1.17319",
     description='More JSON Tools! ',
     long_description=long_desc,
     author='Kyle Lahnakoski',
@@ -50,7 +52,7 @@ setup(
     url='https://github.com/klahnakoski/mo-json',
     license='MPL 2.0',
     packages=find_packages(".", lib_prefix=""),
-    install_requires=["mo-dots", "mo-logs", "mo-times"],
+    install_requires=["mo-dots>=1.6.1731","mo-logs","mo-times"],
     include_package_data=True,
     zip_safe=False,
     classifiers=[  #https://pypi.python.org/pypi?%3Aaction=list_classifiers
