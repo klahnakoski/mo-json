@@ -185,11 +185,8 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             if STRING_TYPE not in sub_schema:
                 sub_schema[STRING_TYPE] = True
                 net_new_properties.append(path + [STRING_TYPE])
-
             append(buffer, '{')
-
             append(buffer, QUOTED_STRING_TYPE)
-
             append(buffer, '"')
             for c in value:
                 append(buffer, ESCAPE_DCT.get(c, c))
@@ -200,7 +197,6 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 net_new_properties.append(path + [NUMBER_TYPE])
 
             append(buffer, '{')
-
             append(buffer, QUOTED_NUMBER_TYPE)
             append(buffer, float2json(value))
             append(buffer, '}')
@@ -295,7 +291,6 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 net_new_properties.append(path + [NESTED_TYPE])
 
             append(buffer, '{')
-
             append(buffer, QUOTED_NESTED_TYPE)
             _iter2json(value, sub_schema[NESTED_TYPE], path + [NESTED_TYPE], net_new_properties, buffer)
             append(buffer, '}')
@@ -347,9 +342,9 @@ def _iter2json(value, sub_schema, path, net_new_properties, buffer):
         sep = COMMA
         typed_encode(v, sub_schema, path, net_new_properties, buffer)
         count += 1
-    append(buffer, ']' + COMMA)
+    append(buffer, ']')
+    append(buffer, COMMA)
     append(buffer, QUOTED_EXISTS_TYPE)
-    append(buffer, COLON)
     append(buffer, text_type(count))
 
 
@@ -370,7 +365,7 @@ def _dict2json(value, sub_schema, path, net_new_properties, buffer):
         append(buffer, encode_basestring(k))
         append(buffer, COLON)
         typed_encode(v, sub_schema[k], path + [k], net_new_properties, buffer)
-    if prefix == COMMA:
+    if prefix is COMMA:
         append(buffer, COMMA)
         append(buffer, QUOTED_EXISTS_TYPE)
         append(buffer, '1}')

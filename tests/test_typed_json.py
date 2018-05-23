@@ -90,6 +90,7 @@ class TestJSON(unittest.TestCase):
         test1 = typed_encode(value)
         expected = '{' + quote(NUMBER_TYPE) + u':42}'
         self.assertEqual(test1, expected)
+        self.assertEqual(expected, test1)
 
     def test_empty_string_value(self):
         value = u""
