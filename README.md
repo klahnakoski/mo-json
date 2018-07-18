@@ -7,7 +7,32 @@ This set of modules solves three problems:
 * Flexible JSON parser to handle comments, and other forms
 * <strike>JSON encoding is slow (`mo_json.encode`)</strike>
 
-## Module `mo_json.stream`
+
+## Running tests
+
+    pip install -r tests/requirements.txt
+    set PYTHONPATH=.	
+    python.exe -m unittest discover tests
+
+
+## Module Details
+
+### Method `mo_json.value2json()`
+
+Convert a `dict`, list, or primitive value to a utf-8 encoded JSON string.
+
+### Method `mo_json.json2value()`
+
+Convert a utf-8 encoded string to a data structure 
+
+
+### Method `mo_json.scrub()`
+
+Remove, or convert, a number of objects from a structure that are not JSON-izable. It is faster to `scrub` and use the default (aka c-based) python encoder than it is to use `default` serializer that forces the use of an interpreted python encoder. 
+
+----------------------
+
+### Module `mo_json.stream`
 
 A module that supports queries over very large JSON
 strings. The overall objective is to make a large JSON document appear like
@@ -15,7 +40,7 @@ a hierarchical database, where arrays of any depth, can be queried like
 tables. 
 
 
-### Limitations
+#### Limitations
 
 This is not a generic streaming JSON parser. It is only intended to breakdown the top-level array, or object for less memory usage.  
 
@@ -24,7 +49,9 @@ This is not a generic streaming JSON parser. It is only intended to breakdown th
    (must not be in the `expected_vars`). The code will raise an exception if
    you can not extract all expected variables.
 
-## Method `mo_json.stream.parse()`
+----------------------
+
+### Method `mo_json.stream.parse()`
 
 Will return an iterator over all objects found in the JSON stream.
 
@@ -37,7 +64,7 @@ Will return an iterator over all objects found in the JSON stream.
 * **expected_vars** - a list of strings specifying the full property names 
   required (all other properties are ignored)
 
-### Common Usage
+#### Common Usage
 
 The most common use of `parse()` is to iterate over all the objects in a large, top-level, array:
 
@@ -60,7 +87,7 @@ returns a generator that provides
 	{"a": 4}
 
 
-### Examples
+#### Examples
 
 **Simple Iteration**
 
@@ -150,44 +177,60 @@ produces an iterator of
 	{"name": "b", "value":2} 
 	{"name": "c", "value":[1,2]} 
 
-
-Module `typed_encoder`
 ----------------------
 
+### Module `typed_encoder`
 
-One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots, who, in their self righteous delusion believe explicit types are better, actually make the lives of humans worse; toiling over endless schema modifications.
 
-This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This also enables the storage of values with no containing object!
+One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots; who, in their self righteous delusion, believe explicit types are better. They make the lives of humans worse; as we are forced to toil over endless schema modifications.
 
-###How it works
+This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This also enables the storage of values with no containing object! 
 
-Typed JSON uses `$value` and `$object` properties to markup the original JSON:
+The typed JSON has a different form than the original, and queries into the documents store must take this into account. This conversion is intended to be hidden behind a query abstraction layer that can understand this format.
 
-* All JSON objects are annotated with `"$object":"."`, which makes querying object existence (especially the empty object) easier.
-* All primitive values are replaced with an object with a single `$value` property: So `"value"` gets mapped to `{"$value": "value"}`.
+#### How it works
 
-Of course, the typed JSON has a different form than the original, and queries into the documents store must take this into account. Fortunately, the use of typed JSON is intended to be hidden behind a query abstraction layer.
+There are three main conversions:
 
+1. Primitive values are replaced with single-property objects, where the property name indicates the data type of the value stored:
+
+	{"a": true} -> {"a": {"~b~": true}} 
+	{"a": 1   } -> {"a": {"~n~": 1   }} 
+	{"a": "1" } -> {"a": {"~s~": "1" }} 
+
+2. JSON objects get an additional property, `~e~`, to mark existence. This allows us to query for object existence, and to count the number of objects.
+    
+    {"a": {}} -> {"a": {}, "~e~": 1}  
+
+3. JSON arrays are contained in a new object, along with `~e~` to count the number of elements in the array:
+    
+    {"a": [1, 2, 3]} -> {"a": {
+                            "~e~": 3, 
+                            "~N~":[
+                                {"~n~": 1},
+                                {"~n~": 2},
+                                {"~n~": 3}
+                            ]
+                        }}
+Please notice the sum of `a.~e~` works for both objects and arrays; letting us interpret sub-objects as single-value nested object arrays. 
 
 ### Function `typed_encode()`
 
 Accepts a `dict`, `list`, or primitive value, and generates the typed JSON that can be inserted into a document store.
-
 
 ### Function `json2typed()`
 
 Converts an existing JSON unicode string and returns the typed JSON unicode string for the same.
 
 
+----------------------
 
----
 
-also see [http://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html](http://tools.ietf.org/id/draft-pbryan-zyp-json-ref-03.html)
+### Module `mo_json.encode`
 
-Module `mo_json.encode`
------------------------
+### Function: `mo_json.encode.json_encoder()`
 
-###Function: `mo_json.encode.json_encoder()`
+----------------------
 
 **Update Mar2016** - *PyPy version 5.x appears to have improved C integration to
 the point that the C library callbacks are no longer a significant overhead:
