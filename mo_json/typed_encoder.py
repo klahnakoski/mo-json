@@ -17,11 +17,9 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from json.encoder import encode_basestring
 
-# from jx_base import Column, python_type_to_json_type, NESTED, EXISTS, STRING, NUMBER, INTEGER, BOOLEAN
-# from jx_base import Column
-from mo_dots import Data, FlatList, NullType, join_field, split_field
-from mo_future import text_type, binary_type, sort_using_key, long, PY2, none_type
-from mo_json import ESCAPE_DCT, float2json
+from mo_dots import Data, FlatList, NullType, join_field, split_field, _get, SLOT, DataObject
+from mo_future import text_type, binary_type, sort_using_key, long, generator_types
+from mo_json import ESCAPE_DCT, float2json, BOOLEAN, INTEGER, NUMBER, STRING, EXISTS, NESTED, python_type_to_json_type
 from mo_json.encoder import UnicodeBuilder, COLON, COMMA, problem_serializing, json_encoder
 from mo_logs import Log
 from mo_logs.strings import quote, utf82unicode
@@ -50,38 +48,71 @@ def unnest_path(encoded):
         encoded = encoded.lstrip(".")
         if not encoded:
             encoded = "."
+    path = split_field(encoded)
+    if not path:
+        return "."
+    if path[-1] == NESTED_TYPE:
+        path = path[:-1]
+        if not path:
+            return "."
 
-    return join_field(decode_property(c) for c in split_field(encoded) if c != NESTED_TYPE)
+    return join_field([decode_property(c) for c in path[:-1] if not c.startswith(TYPE_PREFIX)] + [decode_property(path[-1])])
 
 
 def untyped(value):
-    return _untype(value)
+    return _untype_value(value)
 
 
-def _untype(value):
-    if isinstance(value, Mapping):
-        output = {}
+def _untype_list(value):
+    if any(isinstance(v, Mapping) for v in value):
+        # MAY BE MORE TYPED OBJECTS IN THIS LIST
+        output = [_untype_value(v) for v in value]
+    else:
+        # LIST OF PRIMITIVE VALUES
+        output = value
 
-        for k, v in value.items():
+    if len(output) == 0:
+        return None
+    elif len(output) == 1:
+        return output[0]
+    else:
+        return output
+
+
+def _untype_dict(value):
+    output = {}
+
+    for k, v in value.items():
+        if k.startswith(TYPE_PREFIX):
             if k == EXISTS_TYPE:
                 continue
             elif k == NESTED_TYPE:
-                return _untype(v)
-            elif k.startswith(TYPE_PREFIX):
-                return v
+                return _untype_list(v)
             else:
-                new_v = _untype(v)
-                if isinstance(new_v, list):
-                    len_v = len(new_v)
-                    if len_v==1:
-                        output[decode_property(k)] = new_v[0]
-                    elif len_v>1:
-                        output[decode_property(k)] = new_v
-                elif new_v != None:
-                    output[decode_property(k)] = new_v
-        return output
-    elif isinstance(value, list):
-        return [_untype(v) for v in value]
+                return v
+        else:
+            new_v = _untype_value(v)
+            if new_v is not None:
+                output[decode_property(k)] = new_v
+    return output
+
+
+def _untype_value(value):
+    _type = _get(value, "__class__")
+    if _type is Data:
+        return _untype_dict(_get(value, SLOT))
+    elif _type is dict:
+        return _untype_dict(value)
+    elif _type is FlatList:
+        return _untype_list(value.list)
+    elif _type is list:
+        return _untype_list(value)
+    elif _type is NullType:
+        return None
+    elif _type is DataObject:
+        return _untype_value(_get(value, "_obj"))
+    elif _type in generator_types:
+        return _untype_list(value)
     else:
         return value
 
@@ -100,7 +131,7 @@ def encode(value):
 
 def typed_encode(value, sub_schema, path, net_new_properties, buffer):
     """
-    :param value: THE DATASCRUTURE TO ENCODE
+    :param value: THE DATA STRUCTURE TO ENCODE
     :param sub_schema: dict FROM PATH TO Column DESCRIBING THE TYPE
     :param path: list OF CURRENT PATH
     :param net_new_properties: list FOR ADDING NEW PROPERTIES NOT FOUND IN sub_schema
@@ -386,40 +417,6 @@ def _dict2json(value, sub_schema, path, net_new_properties, buffer):
         append(buffer, '1}')
 
 
-IS_NULL = '0'
-BOOLEAN = 'boolean'
-INTEGER = 'integer'
-NUMBER = 'number'
-STRING = 'string'
-OBJECT = 'object'
-NESTED = "nested"
-EXISTS = "exists"
-
-JSON_TYPES = [BOOLEAN, INTEGER, NUMBER, STRING, OBJECT]
-PRIMITIVE = [EXISTS, BOOLEAN, INTEGER, NUMBER, STRING]
-STRUCT = [EXISTS, OBJECT, NESTED]
-
-
-python_type_to_json_type = {
-    int: NUMBER,
-    text_type: STRING,
-    float: NUMBER,
-    None: OBJECT,
-    bool: BOOLEAN,
-    NullType: OBJECT,
-    none_type: OBJECT,
-    Data: OBJECT,
-    dict: OBJECT,
-    object: OBJECT,
-    Mapping: OBJECT,
-    list: NESTED,
-    FlatList: NESTED,
-    Date: NUMBER
-}
-
-if PY2:
-    python_type_to_json_type[str] = STRING
-    python_type_to_json_type[long] = NUMBER
 
 
 TYPE_PREFIX = "~"  # u'\u0442\u0443\u0440\u0435-'  # "туре"
