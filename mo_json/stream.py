@@ -154,7 +154,7 @@ def parse(json, query_path, expected_vars=NO_VARS):
                 pass
             elif e == ".":
                 destination[i] = value
-            elif isinstance(value, Mapping):
+            elif is_data(value):
                 destination[i] = value[e]
             else:
                 destination[i] = Null
@@ -312,7 +312,7 @@ def parse(json, query_path, expected_vars=NO_VARS):
             c = json[index]
         return c, index + 1
 
-    if isinstance(query_path, Mapping) and query_path.get("items"):
+    if is_data(query_path) and query_path.get("items"):
         path_list = split_field(query_path.get("items")) + ["$items"]  # INSERT A MARKER SO THAT OBJECT IS STREAM DECODED
     else:
         path_list = split_field(query_path)

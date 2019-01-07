@@ -37,12 +37,10 @@ OBJECT = 'object'
 NESTED = "nested"
 EXISTS = "exists"
 
+ALL_TYPES = {IS_NULL: IS_NULL, BOOLEAN: BOOLEAN, INTEGER: INTEGER, NUMBER: NUMBER, STRING: STRING, OBJECT: OBJECT, NESTED: NESTED, EXISTS: EXISTS}
 JSON_TYPES = [BOOLEAN, INTEGER, NUMBER, STRING, OBJECT]
 PRIMITIVE = [EXISTS, BOOLEAN, INTEGER, NUMBER, STRING]
 STRUCT = [EXISTS, OBJECT, NESTED]
-
-
-
 
 
 _get = object.__getattribute__
@@ -61,6 +59,18 @@ for i in range(0x20):
     ESCAPE_DCT.setdefault(chr(i), u'\\u{0:04x}'.format(i))
 
 ESCAPE = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t]')
+
+
+def is_data(d):
+    return d.__class__ in (Data, dict)
+
+
+def is_text(t):
+    return t.__class__ is text_type
+
+
+def is_binary(t):
+    return t.__class__ is binary_type
 
 
 def replace(match):
@@ -176,7 +186,7 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
         return scrub_number(value)
     elif type_ is Data:
         return _scrub(_get(value, SLOT), is_done, stack, scrub_text, scrub_number)
-    elif isinstance(value, Mapping):
+    elif is_data(value):
         _id = id(value)
         if _id in is_done:
             Log.warning("possible loop in structure detected")
@@ -185,16 +195,16 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
 
         output = {}
         for k, v in value.items():
-            if isinstance(k, text_type):
+            if is_text(k):
                 pass
-            elif isinstance(k, binary_type):
+            elif is_binary(k):
                 k = k.decode('utf8')
             # elif hasattr(k, "__unicode__"):
             #     k = text_type(k)
             else:
                 Log.error("keys must be strings")
             v = _scrub(v, is_done, stack, scrub_text, scrub_number)
-            if v != None or isinstance(v, Mapping):
+            if v != None or is_data(v):
                 output[k] = v
 
         is_done.discard(_id)
@@ -293,7 +303,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
     :param leaves: ASSUME JSON KEYS ARE DOT-DELIMITED
     :return: Python value
     """
-    if not isinstance(json_string, text_type):
+    if not is_text(json_string):
         Log.error("only unicode json accepted")
 
     try:

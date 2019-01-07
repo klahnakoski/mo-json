@@ -22,7 +22,7 @@ from math import floor
 
 from mo_dots import Data, FlatList, NullType, Null, SLOT
 from mo_future import text_type, binary_type, long, utf8_json_encoder, sort_using_key, xrange, PYPY
-from mo_json import ESCAPE_DCT, scrub, float2json
+from mo_json import ESCAPE_DCT, scrub, float2json, is_binary, is_data
 from mo_logs import Except
 from mo_logs.strings import utf82unicode, quote
 from mo_times import Timer
@@ -201,7 +201,7 @@ def _value2json(value, _buffer):
             append(_buffer, float2json(value.seconds))
         elif type is NullType:
             append(_buffer, u"null")
-        elif isinstance(value, Mapping):
+        elif is_data(value):
             if not value:
                 append(_buffer, u"{}")
             else:
@@ -253,7 +253,7 @@ def _dict2json(value, _buffer):
         for k, v in value.items():
             append(_buffer, prefix)
             prefix = COMMA_QUOTE
-            if isinstance(k, binary_type):
+            if is_binary(k):
                 k = utf82unicode(k)
             for c in k:
                 append(_buffer, ESCAPE_DCT.get(c, c))
@@ -278,7 +278,7 @@ def pretty_json(value):
             return "false"
         elif value is True:
             return "true"
-        elif isinstance(value, Mapping):
+        elif is_data(value):
             try:
                 items = sort_using_key(value.items(), lambda r: r[0])
                 values = [encode_basestring(k) + PRETTY_COLON + pretty_json(v) for k, v in items if v != None]
@@ -292,7 +292,7 @@ def pretty_json(value):
                 from mo_logs import Log
                 from mo_math import OR
 
-                if OR(not isinstance(k, text_type) for k in value.keys()):
+                if OR(not is_text(k) for k in value.keys()):
                     Log.error(
                         "JSON must have string keys: {{keys}}:",
                         keys=[k for k in value.keys()],
@@ -306,8 +306,8 @@ def pretty_json(value):
                 )
         elif value in (None, Null):
             return "null"
-        elif isinstance(value, (text_type, binary_type)):
-            if isinstance(value, binary_type):
+        elif value.__class__ in (binary_type, text_type):
+            if is_binary(value):
                 value = utf82unicode(value)
             try:
                 return quote(value)
