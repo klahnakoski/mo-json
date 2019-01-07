@@ -7,27 +7,25 @@
 #
 # Author: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, unicode_literals
 
-import json
-import math
-import time
-from collections import Mapping
-from datetime import datetime, date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
+import json
 from json.encoder import encode_basestring
+import math
 from math import floor
+import time
 
-from mo_dots import Data, FlatList, NullType, Null, SLOT
-from mo_future import text_type, binary_type, long, utf8_json_encoder, sort_using_key, xrange, PYPY
-from mo_json import ESCAPE_DCT, scrub, float2json, is_binary, is_data
+from mo_dots import Data, FlatList, Null, NullType, SLOT
+from mo_future import PYPY, binary_type, long, sort_using_key, text_type, utf8_json_encoder, xrange
 from mo_logs import Except
-from mo_logs.strings import utf82unicode, quote
+from mo_logs.strings import quote, utf82unicode
 from mo_times import Timer
 from mo_times.dates import Date
 from mo_times.durations import Duration
+
+from mo_json import ESCAPE_DCT, float2json, is_binary, is_data, scrub
 
 json_decoder = json.JSONDecoder().decode
 _get = object.__getattribute__

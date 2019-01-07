@@ -7,16 +7,15 @@
 #
 # Author: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, unicode_literals
 
 import json
-from collections import Mapping
 from types import GeneratorType
 
-from mo_dots import split_field, startswith_field, relative_field, Data, join_field, Null, wrap
+from mo_dots import Data, Null, join_field, relative_field, split_field, startswith_field, wrap
 from mo_logs import Log
+
+from mo_json import is_data
 
 DEBUG = False
 
@@ -29,7 +28,6 @@ CLOSE = {
 NO_VARS = set()
 
 json_decoder = json.JSONDecoder().decode
-
 
 
 def parse(json, query_path, expected_vars=NO_VARS):

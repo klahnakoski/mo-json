@@ -13,7 +13,7 @@ from __future__ import unicode_literals
 
 import math
 import re
-from collections import Mapping
+
 from datetime import date, timedelta, datetime
 from decimal import Decimal
 
@@ -404,7 +404,6 @@ python_type_to_json_type = {
     Data: OBJECT,
     dict: OBJECT,
     object: OBJECT,
-    Mapping: OBJECT,
     list: NESTED,
     set: NESTED,
     # tuple: NESTED,  # DO NOT INCLUDE, WILL HIDE LOGIC ERRORS
@@ -419,8 +418,7 @@ if PY2:
 for k, v in items(python_type_to_json_type):
     python_type_to_json_type[k.__name__] = v
 
-
-_merge_order= {
+_merge_order = {
     BOOLEAN: 1,
     INTEGER: 2,
     NUMBER: 3,
