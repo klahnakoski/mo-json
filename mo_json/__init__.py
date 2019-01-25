@@ -7,20 +7,18 @@
 #
 # Author: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import unicode_literals
+from __future__ import absolute_import, division, unicode_literals
 
+from mo_future import is_text, is_binary
+from datetime import date, datetime, timedelta
+from decimal import Decimal
 import math
 import re
 
-from datetime import date, timedelta, datetime
-from decimal import Decimal
-
-from mo_dots import FlatList, NullType, Data, wrap_leaves, wrap, Null, SLOT
+from mo_dots import Data, FlatList, Null, NullType, SLOT, is_data, wrap, wrap_leaves
 from mo_dots.objects import DataObject
-from mo_future import text_type, none_type, long, binary_type, PY2, items
-from mo_logs import Except, strings, Log
+from mo_future import PY2, is_binary, is_text, items, long, none_type, text_type
+from mo_logs import Except, Log, strings
 from mo_logs.strings import expand_template
 from mo_times import Date, Duration
 
@@ -59,18 +57,6 @@ for i in range(0x20):
     ESCAPE_DCT.setdefault(chr(i), u'\\u{0:04x}'.format(i))
 
 ESCAPE = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t]')
-
-
-def is_data(d):
-    return d.__class__ in (Data, dict)
-
-
-def is_text(t):
-    return t.__class__ is text_type
-
-
-def is_binary(t):
-    return t.__class__ is binary_type
 
 
 def replace(match):

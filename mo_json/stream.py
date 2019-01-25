@@ -9,13 +9,12 @@
 #
 from __future__ import absolute_import, division, unicode_literals
 
+from mo_future import is_text, is_binary
 import json
 from types import GeneratorType
 
-from mo_dots import Data, Null, join_field, relative_field, split_field, startswith_field, wrap
+from mo_dots import Data, Null, is_data, join_field, relative_field, split_field, startswith_field, wrap
 from mo_logs import Log
-
-from mo_json import is_data
 
 DEBUG = False
 
