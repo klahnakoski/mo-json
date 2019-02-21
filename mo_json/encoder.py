@@ -9,7 +9,6 @@
 #
 from __future__ import absolute_import, division, unicode_literals
 
-from mo_future import is_text, is_binary
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 import json
@@ -20,12 +19,13 @@ import time
 
 from mo_dots import Data, FlatList, Null, NullType, SLOT, is_data, is_list
 from mo_future import PYPY, binary_type, is_binary, is_text, long, sort_using_key, text_type, utf8_json_encoder, xrange
-from mo_json import ESCAPE_DCT, float2json, scrub
 from mo_logs import Except
 from mo_logs.strings import quote, utf82unicode
 from mo_times import Timer
 from mo_times.dates import Date
 from mo_times.durations import Duration
+
+from mo_json import ESCAPE_DCT, float2json, scrub
 
 json_decoder = json.JSONDecoder().decode
 _get = object.__getattribute__
