@@ -186,7 +186,7 @@ One reason that NoSQL documents stores are wonderful is their schema can automat
 
 This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This also enables the storage of values with no containing object! 
 
-The typed JSON has a different form than the original, and queries into the documents store must take this into account. This conversion is intended to be hidden behind a query abstraction layer that can understand this format.
+The typed JSON has a different form than the original, and queries into the document store must take this into account. This conversion is intended to be hidden behind a query abstraction layer that can understand this format.
 
 #### How it works
 
