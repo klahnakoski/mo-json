@@ -199,9 +199,9 @@ There are three main conversions:
     {"a": "1" } -> {"a": {"~s~": "1" }}
 ```
 2. JSON objects get an additional property, `~e~`, to mark existence. This allows us to query for object existence, and to count the number of objects.
-    
+```    
     {"a": {}} -> {"a": {}, "~e~": 1}  
-
+```
 3. JSON arrays are contained in a new object, along with `~e~` to count the number of elements in the array:
 ```    
     {"a": [1, 2, 3]} -> {"a": {
