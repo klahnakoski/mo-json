@@ -11,7 +11,7 @@ This set of modules solves three problems:
 ## Running tests
 
     pip install -r tests/requirements.txt
-    set PYTHONPATH=.	
+    set PYTHONPATH=.    
     python.exe -m unittest discover tests
 
 
@@ -68,45 +68,45 @@ Will return an iterator over all objects found in the JSON stream.
 
 The most common use of `parse()` is to iterate over all the objects in a large, top-level, array:
 
-	parse(json, path=".", required_vars=["."]}
+    parse(json, path=".", required_vars=["."]}
 
 For example, given the following JSON: 
 
-	[
-		{"a": 1},
-		{"a": 2},
-		{"a": 3},
-		{"a": 4}
-	]
+    [
+        {"a": 1},
+        {"a": 2},
+        {"a": 3},
+        {"a": 4}
+    ]
 
 returns a generator that provides
 
-	{"a": 1}
-	{"a": 2}
-	{"a": 3}
-	{"a": 4}
+    {"a": 1}
+    {"a": 2}
+    {"a": 3}
+    {"a": 4}
 
 
 #### Examples
 
 **Simple Iteration**
 
-	json = {"b": "done", "a": [1, 2, 3]}
-	parse(json, path="a", required_vars=["a", "b"]}
+    json = {"b": "done", "a": [1, 2, 3]}
+    parse(json, path="a", required_vars=["a", "b"]}
 
 We will iterate through the array found on property `a`, and return both `a` and `b` variables. It will return the following values:
 
-	{"b": "done", "a": 1}
-	{"b": "done", "a": 2}
-	{"b": "done", "a": 3}
+    {"b": "done", "a": 1}
+    {"b": "done", "a": 2}
+    {"b": "done", "a": 3}
 
 
 **Bad - Property follows array**
 
 The same query, but different JSON with `b` following `a`:
 
-	json = {"a": [1, 2, 3], "b": "done"}
-	parse(json, path="a", required_vars=["a", "b"]}
+    json = {"a": [1, 2, 3], "b": "done"}
+    parse(json, path="a", required_vars=["a", "b"]}
 
 Since property `b` follows the array we're iterating over, this will raise an error.
 
@@ -114,68 +114,68 @@ Since property `b` follows the array we're iterating over, this will raise an er
 
 The same JSON, but different query, which does not require `b`:
 
-	json = {"a": [1, 2, 3], "b": "done"}
-	parse(json, path="a", required_vars=["a"]}
+    json = {"a": [1, 2, 3], "b": "done"}
+    parse(json, path="a", required_vars=["a"]}
 
 If we do not require `b`, then streaming will proceed just fine:
 
-	{"a": 1}
-	{"a": 2}
-	{"a": 3}
+    {"a": 1}
+    {"a": 2}
+    {"a": 3}
 
 **Complex Objects**
 
 This streamer was meant for very long lists of complex objects. Use dot-delimited naming to refer to full name of the property
 
-	json = [{"a": {"b": 1, "c": 2}}, {"a": {"b": 3, "c": 4}}, ...
-	parse(json, path=".", required_vars=["a.c"])
+    json = [{"a": {"b": 1, "c": 2}}, {"a": {"b": 3, "c": 4}}, ...
+    parse(json, path=".", required_vars=["a.c"])
 
 The dot (`.`) can be used to refer to the top-most array. Notice the structure is maintained, but only includes the required variables.
 
-	{"a": {"c": 2}}
-	{"a": {"c": 4}}
-	...
+    {"a": {"c": 2}}
+    {"a": {"c": 4}}
+    ...
 
 **Nested Arrays**
 
 Nested array iteration is meant to mimic a left-join from parent to child table;
 as such, it includes every record in the parent. 
 
-	json = [
-		{"o": 1: "a": [{"b": 1}: {"b": 2}: {"b": 3}: {"b": 4}]},
-		{"o": 2: "a": {"b": 5}},
-		{"o": 3}
-	]
-	parse(json, path=[".", "a"], required_vars=["o", "a.b"])
+    json = [
+        {"o": 1: "a": [{"b": 1}: {"b": 2}: {"b": 3}: {"b": 4}]},
+        {"o": 2: "a": {"b": 5}},
+        {"o": 3}
+    ]
+    parse(json, path=[".", "a"], required_vars=["o", "a.b"])
 
 The `path` parameter can be a list, which is used to indicate which properties
 are expected to have an array, and to iterate over them. Please notice if no
 array is found, it is treated like a singleton array, and missing arrays still
 produce a result.
 
-	{"o": 1, "a": {"b": 1}}
-	{"o": 1, "a": {"b": 2}}
-	{"o": 1, "a": {"b": 3}}
-	{"o": 1, "a": {"b": 4}}
-	{"o": 2, "a": {"b": 5}}
-	{"o": 3}
+    {"o": 1, "a": {"b": 1}}
+    {"o": 1, "a": {"b": 2}}
+    {"o": 1, "a": {"b": 3}}
+    {"o": 1, "a": {"b": 4}}
+    {"o": 2, "a": {"b": 5}}
+    {"o": 3}
 
 **Large top-level objects**
 
 Some JSON is a single large object, rather than an array of objects. In these cases, you can use the `items` operator to iterate through all name/value pairs of an object:
 
-	json = {
-		"a": "test",
-		"b": 2,
-		"c": [1, 2]
-	}
-	parse(json, {"items":"."}, {"name", "value"})   
+    json = {
+        "a": "test",
+        "b": 2,
+        "c": [1, 2]
+    }
+    parse(json, {"items":"."}, {"name", "value"})   
 
 produces an iterator of
 
-	{"name": "a", "value":"test"} 
-	{"name": "b", "value":2} 
-	{"name": "c", "value":[1,2]} 
+    {"name": "a", "value":"test"} 
+    {"name": "b", "value":2} 
+    {"name": "c", "value":[1,2]} 
 
 ----------------------
 
@@ -194,9 +194,9 @@ There are three main conversions:
 
 1. Primitive values are replaced with single-property objects, where the property name indicates the data type of the value stored:
 
-	{"a": true} -> {"a": {"~b~": true}} 
-	{"a": 1   } -> {"a": {"~n~": 1   }} 
-	{"a": "1" } -> {"a": {"~s~": "1" }} 
+    {"a": true} -> {"a": {"~b~": true}} 
+    {"a": 1   } -> {"a": {"~n~": 1   }} 
+    {"a": "1" } -> {"a": {"~s~": "1" }} 
 
 2. JSON objects get an additional property, `~e~`, to mark existence. This allows us to query for object existence, and to count the number of objects.
     
