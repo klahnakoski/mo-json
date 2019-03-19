@@ -193,25 +193,26 @@ The typed JSON has a different form than the original, and queries into the docu
 There are three main conversions:
 
 1. Primitive values are replaced with single-property objects, where the property name indicates the data type of the value stored:
-
+```
     {"a": true} -> {"a": {"~b~": true}} 
     {"a": 1   } -> {"a": {"~n~": 1   }} 
-    {"a": "1" } -> {"a": {"~s~": "1" }} 
-
+    {"a": "1" } -> {"a": {"~s~": "1" }}
+```
 2. JSON objects get an additional property, `~e~`, to mark existence. This allows us to query for object existence, and to count the number of objects.
     
     {"a": {}} -> {"a": {}, "~e~": 1}  
 
 3. JSON arrays are contained in a new object, along with `~e~` to count the number of elements in the array:
-    
+```    
     {"a": [1, 2, 3]} -> {"a": {
-                            "~e~": 3, 
-                            "~N~":[
-                                {"~n~": 1},
-                                {"~n~": 2},
-                                {"~n~": 3}
-                            ]
-                        }}
+        "~e~": 3, 
+        "~N~":[
+            {"~n~": 1},
+            {"~n~": 2},
+            {"~n~": 3}
+        ]
+    }}
+```
 Please notice the sum of `a.~e~` works for both objects and arrays; letting us interpret sub-objects as single-value nested object arrays. 
 
 ### Function `typed_encode()`
