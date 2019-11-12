@@ -1,4 +1,4 @@
-mo-future
-mo-dots>=1.6.1731
-mo-logs
-mo-times
+mo-future>3
+mo-dots>3
+mo-logs>3
+mo-times>3
