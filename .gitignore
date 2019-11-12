@@ -3,3 +3,8 @@
 *.egg-info
 *.pyc
 /tests/resources/JSONTestSuite
+/vendor
+.idea
+.svn
+*.iml
+
