@@ -3,9 +3,11 @@
     "author_email": "kyle@lahnakoski.com",
     "classifiers": [
         "Development Status :: 4 - Beta",
+        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)",
+        "Programming Language :: Python :: 2.7",
+        "Programming Language :: Python :: 3.7",
         "Topic :: Software Development :: Libraries",
-        "Topic :: Software Development :: Libraries :: Python Modules",
-        "License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)"
+        "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     "description": "More JSON Tools! ",
     "install_requires": [
