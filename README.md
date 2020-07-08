@@ -1,11 +1,15 @@
-# More JSON Tools!
+# More JSON Tools
+
+|Branch      |Status   |
+|------------|---------|
+|master      | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.org/klahnakoski/mo-json) |
+|dev         | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=dev)](https://travis-ci.org/klahnakoski/mo-json)  |
 
 This set of modules solves three problems:
 
 * We want to iterate over massive JSON easily (`mo_json.stream`)
 * A bijection between strictly typed JSON, and dynamic typed JSON.
 * Flexible JSON parser to handle comments, and other forms
-* <strike>JSON encoding is slow (`mo_json.encode`)</strike>
 
 
 ## Running tests
