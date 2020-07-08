@@ -395,7 +395,6 @@ else:
             Log.error("Can not convert {{value}}", value=d, cause=e)
 
 
-
 python_type_to_json_type = {
     int: INTEGER,
     text: STRING,
