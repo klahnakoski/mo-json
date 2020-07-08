@@ -11,7 +11,7 @@ from __future__ import absolute_import, division, unicode_literals
 
 import math
 import re
-from datetime import date, datetime, timedelta, timezone
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from hjson import loads as hjson2value
@@ -356,22 +356,43 @@ else:
     def bytes2hex(value, separator=" "):
         return separator.join('{:02X}'.format(x) for x in value)
 
+if PY2:
+    def datetime2unix(d):
+        try:
+            if d == None:
+                return None
+            elif isinstance(d, datetime):
+                epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+            elif isinstance(d, date):
+                epoch = date(1970, 1, 1)
+            else:
+                Log.error("Can not convert {{value}} of type {{type}}", value=d, type=d.__class__)
 
-def datetime2unix(d):
-    try:
-        if d == None:
-            return None
-        elif isinstance(d, datetime):
-            epoch = datetime(1970, 1, 1, 0, 0, 0, 0, timezone.utc)
-        elif isinstance(d, date):
-            epoch = date(1970, 1, 1)
-        else:
-            Log.error("Can not convert {{value}} of type {{type}}",  value= d,  type= d.__class__)
+            diff = d - epoch
+            return float(diff.total_seconds())
+        except Exception as e:
+            Log.error("Can not convert {{value}}", value=d, cause=e)
+else:
+    from datetime import timezone
 
-        diff = d - epoch
-        return float(diff.total_seconds())
-    except Exception as e:
-        Log.error("Can not convert {{value}}",  value= d, cause=e)
+    def datetime2unix(d):
+        try:
+            if d == None:
+                return None
+            elif isinstance(d, datetime):
+                if d.tzinfo == None:
+                    epoch = datetime(1970, 1, 1, 0, 0, 0, 0)
+                else:
+                    epoch = datetime(1970, 1, 1, 0, 0, 0, 0, timezone.utc)
+            elif isinstance(d, date):
+                epoch = date(1970, 1, 1)
+            else:
+                Log.error("Can not convert {{value}} of type {{type}}", value=d, type=d.__class__)
+
+            diff = d - epoch
+            return float(diff.total_seconds())
+        except Exception as e:
+            Log.error("Can not convert {{value}}", value=d, cause=e)
 
 
 
