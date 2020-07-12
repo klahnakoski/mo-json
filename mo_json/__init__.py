@@ -11,10 +11,8 @@ from __future__ import absolute_import, division, unicode_literals
 
 import math
 import re
-from collections import deque
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from test.test_deque import Deque
 
 from hjson import loads as hjson2value
 
@@ -247,7 +245,7 @@ def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
     :return:
     """
     if FIND_LOOPS:
-        obj = scrub(obj, scrub_text=_keep_whitespace if keep_whitespace else trim_whitespace())
+        obj = scrub(obj, scrub_text=_keep_whitespace if keep_whitespace else trim_whitespace)
     try:
         json = json_encoder(obj, pretty=pretty)
         if json == None:
