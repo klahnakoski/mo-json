@@ -5,12 +5,73 @@
 |master      | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.org/klahnakoski/mo-json) |
 |dev         | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=dev)](https://travis-ci.org/klahnakoski/mo-json)  |
 
-This set of modules solves three problems:
+This set of modules provides the following benefits:
 
-* We want to iterate over massive JSON easily (`mo_json.stream`)
-* A bijection between strictly typed JSON, and dynamic typed JSON.
-* Flexible JSON parser to handle comments, and other forms
+* Serialize more datastructures into JSON
+* More flexibility  in what's accepted as "JSON"
+* Iterate over massive JSON easily (`mo_json.stream`)
+* Provide a bijection between strictly typed JSON, and dynamic typed JSON.
 
+## Usage
+
+### Encode using `__json__`
+
+Add a `__json__` method to any class you wish to serialize to JSON. It is incumbent on you to ensure valid JSON is emitted:
+
+    class MyClass(object):
+        def __init__(self, a, b):
+            self.a = a
+            self.b = b
+
+        def __json__(self):
+            separator = "{"
+            for k, v in self.__dict__.items():
+                yield separator
+                separator = ","
+                yield value2json(k)+": "+value2json(v)
+            yield "}"
+
+With the `__json__` function defined, you may use the `value2json` function:
+
+    from mo_json import value2json
+    
+    result = value2json(MyClass(a="name", b=42))    
+
+
+### Encode using `__data__`
+
+Add a `__data__` method that will convert your class into some JSON-serializable data structures.  You may find this easier to implement than emitting pure JSON.  **If both `__data__` and `__json__` exist, then `__json__` is used.**   
+
+    from mo_json import value2json
+
+    class MyClass(object):
+        def __init__(self, a, b):
+            self.a = a
+            self.b = b
+
+        def __data__(self):
+            return self.__dict__
+   
+    result = value2json(MyClass(a="name", b=42))    
+
+
+### Decoding
+
+The `json2value` function provides a couple of options
+
+    * `flexible` - will be very forgiving of JSON accepted (see [hjson](https://pypi.org/project/hjson/))
+    * `leaves` - will interpret keys with dots ("`.`") as dot-delimited paths
+
+    from mo_json import json2value
+    
+    result = json2value(
+        "http.headers.referer: http://example.com", 
+        flexible=True, 
+        leaves=True
+    )
+    assert result=={'http': {'headers': {'referer': 'http://example.com'}}}
+ 
+Notice the lack of quotes in the JSON (hjson) and the deep structure created by the dot-delimited path name
 
 ## Running tests
 
@@ -20,15 +81,6 @@ This set of modules solves three problems:
 
 
 ## Module Details
-
-### Method `mo_json.value2json()`
-
-Convert a `dict`, list, or primitive value to a utf-8 encoded JSON string.
-
-### Method `mo_json.json2value()`
-
-Convert a utf-8 encoded string to a data structure 
-
 
 ### Method `mo_json.scrub()`
 

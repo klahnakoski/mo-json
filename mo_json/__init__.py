@@ -223,11 +223,18 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
             return True
     elif not isinstance(value, Except) and isinstance(value, Exception):
         return _scrub(Except.wrap(value), is_done, stack, scrub_text, scrub_number)
+    elif hasattr(value, '__json__'):
+        try:
+            j = value.__json__()
+            v = json2value(j if is_text(j) else "".join(j))
+            return _scrub(v, is_done, stack, scrub_text, scrub_number)
+        except Exception as cause:
+            Log.error("problem with calling __json__()", cause)
     elif hasattr(value, '__data__'):
         try:
             return _scrub(value.__data__(), is_done, stack, scrub_text, scrub_number)
-        except Exception as e:
-            Log.error("problem with calling __json__()", e)
+        except Exception as cause:
+            Log.error("problem with calling __data__()", cause)
     elif hasattr(value, 'co_code') or hasattr(value, "f_locals"):
         return None
     elif hasattr(value, '__iter__'):
