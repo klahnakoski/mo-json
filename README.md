@@ -59,8 +59,8 @@ Add a `__data__` method that will convert your class into some JSON-serializable
 
 The `json2value` function provides a couple of options
 
-    * `flexible` - will be very forgiving of JSON accepted (see [hjson](https://pypi.org/project/hjson/))
-    * `leaves` - will interpret keys with dots ("`.`") as dot-delimited paths
+* `flexible` - will be very forgiving of JSON accepted (see [hjson](https://pypi.org/project/hjson/))
+* `leaves` - will interpret keys with dots ("`.`") as dot-delimited paths
 
     from mo_json import json2value
     
