@@ -62,14 +62,17 @@ The `json2value` function provides a couple of options
 * `flexible` - will be very forgiving of JSON accepted (see [hjson](https://pypi.org/project/hjson/))
 * `leaves` - will interpret keys with dots ("`.`") as dot-delimited paths
 
-    from mo_json import json2value
-    
-    result = json2value(
-        "http.headers.referer: http://example.com", 
-        flexible=True, 
-        leaves=True
-    )
-    assert result=={'http': {'headers': {'referer': 'http://example.com'}}}
+
+```
+from mo_json import json2value
+
+result = json2value(
+    "http.headers.referer: http://example.com", 
+    flexible=True, 
+    leaves=True
+)
+assert result=={'http': {'headers': {'referer': 'http://example.com'}}}
+```
  
 Notice the lack of quotes in the JSON (hjson) and the deep structure created by the dot-delimited path name
 
