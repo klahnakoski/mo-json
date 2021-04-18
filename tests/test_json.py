@@ -323,6 +323,11 @@ class TestJSON(unittest.TestCase):
             result, {"http": {"headers": {"referer": "http://example.com"}}}
         )
 
+    def test_tuple(self):
+        result = value2json((1, "int"), pretty=True)
+        expected = '[1, "int"]'
+        self.assertEqual(result, expected)
+
 
 if __name__ == "__main__":
     try:
