@@ -52,13 +52,14 @@ class Parser(object):
             self.json = List_usingStream(NEXT(json))
         else:
             Log.error(
-                "Expecting json to be a stream, or a function that will return more bytes"
+                "Expecting json to be a stream, or a function that will return more"
+                " bytes"
             )
 
         if is_data(query_path) and query_path.get("items"):
-            self.path_list = split_field(query_path.get("items")) + [
-                "$items"
-            ]  # INSERT A MARKER SO THAT OBJECT IS STREAM DECODED
+            self.path_list = (
+                split_field(query_path.get("items")) + ["$items"]
+            )  # INSERT A MARKER SO THAT OBJECT IS STREAM DECODED
         else:
             self.path_list = split_field(query_path)
 
@@ -157,7 +158,8 @@ class Parser(object):
                     else:
                         if len(self.done[0]) <= len(child_path):
                             Log.error(
-                                "Can not pick up more variables, iterator over {{path}} is done",
+                                "Can not pick up more variables, iterator over {{path}}"
+                                " is done",
                                 path=join_field(self.done[0]),
                             )
                         index = self._assign_token(index, c, child_expected)
