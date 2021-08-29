@@ -303,6 +303,22 @@ def python_type_to_json_type(type):
     return _python_type_to_json_type[type]
 
 
+
+_json_type_to_primitive_type = {
+    T_BOOLEAN: BOOLEAN,
+    T_INTEGER: NUMBER,
+    T_NUMBER: NUMBER,
+    T_TIME: NUMBER,
+    T_INTERVAL: NUMBER,
+    T_TEXT: STRING,
+    T_ARRAY: ARRAY,
+}
+
+
+def json_type_to_primitive_type(type):
+    return _json_type_to_primitive_type.get(type)
+
+
 _python_type_to_json_type = {
     int: T_INTEGER,
     text: T_TEXT,
