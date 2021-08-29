@@ -10,7 +10,6 @@
         "Topic :: Software Development :: Libraries :: Python Modules"
     ],
     "description": "More JSON Tools! ",
-    "extras_require": {"tests": ["pyLibrary", "mo-testing", "mo-threads"]},
     "install_requires": [
                         "hjson",   "mo-dots==5.22.21182", "mo-future==5.17.21182",
           "mo-logs==5.44.21241",  "mo-times==5.24.21182"
