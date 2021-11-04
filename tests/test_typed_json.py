@@ -12,7 +12,7 @@ import datetime
 import unittest
 
 from mo_dots import wrap
-from mo_json.typed_encoder import EXISTS_TYPE, NUMBER_TYPE, STRING_TYPE, BOOLEAN_TYPE, NESTED_TYPE, untyped
+from mo_json.typed_encoder import EXISTS_TYPE, NUMBER_TYPE, STRING_TYPE, BOOLEAN_TYPE, ARRAY_TYPE, untyped
 from mo_json.typed_encoder import encode as typed_encode
 from mo_logs.strings import quote
 
@@ -63,7 +63,7 @@ class TestJSON(unittest.TestCase):
     def test_list_of_objects(self):
         value = {"a": [{}, "b"]}
         test1 = typed_encode(value)
-        expected = u'{"a":{"'+NESTED_TYPE+u'":[{' + quote(EXISTS_TYPE) + u':1},{' + quote(STRING_TYPE) + u':"b"}],' + quote(EXISTS_TYPE) + u':2},' + quote(EXISTS_TYPE) + u':1}'
+        expected = u'{"a":{"'+ARRAY_TYPE+u'":[{' + quote(EXISTS_TYPE) + u':1},{' + quote(STRING_TYPE) + u':"b"}],' + quote(EXISTS_TYPE) + u':2},' + quote(EXISTS_TYPE) + u':1}'
         self.assertEqual(test1, expected)
 
     def test_empty_list_value(self):
@@ -78,10 +78,16 @@ class TestJSON(unittest.TestCase):
         expected = u'{' + quote(NUMBER_TYPE) + u':42}'
         self.assertEqual(test1, expected)
 
-    def test_list(self):
+    def test_list_i(self):
         value = {"value": [23, 42]}
         test1 = typed_encode(value)
         expected = u'{"value":{' + quote(NUMBER_TYPE) + u':[23,42]},' + quote(EXISTS_TYPE) + u':1}'
+        self.assertEqual(test1, expected)
+
+    def test_list_n(self):
+        value = {"value": [23.5, 42]}
+        test1 = typed_encode(value)
+        expected = u'{"value":{' + quote(NUMBER_TYPE) + u':[23.5,42]},' + quote(EXISTS_TYPE) + u':1}'
         self.assertEqual(test1, expected)
 
     def test_number_value(self):

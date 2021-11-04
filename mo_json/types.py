@@ -23,14 +23,6 @@ def ToJsonType(value):
         return T_UNKNOWN
 
 
-def FromJsonType(value):
-    value = base_type(value)
-    for simple_type, complex_type in _type_to_json_type.items():
-        if simple_type is value or complex_type is value or complex_type == value:
-            return simple_type
-    return OBJECT
-
-
 class JsonType(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
@@ -41,6 +33,9 @@ class JsonType(object):
 
     def __or__(self, other):
         other = ToJsonType(other)
+        if self is T_IS_NULL:
+            return other
+
         sd = self.__dict__.copy()
         od = other.__dict__
 
@@ -303,8 +298,8 @@ def python_type_to_json_type(type):
     return _python_type_to_json_type[type]
 
 
-
-_json_type_to_primitive_type = {
+_json_type_to_simple_type = {
+    T_IS_NULL: IS_NULL,
     T_BOOLEAN: BOOLEAN,
     T_INTEGER: NUMBER,
     T_NUMBER: NUMBER,
@@ -315,8 +310,8 @@ _json_type_to_primitive_type = {
 }
 
 
-def json_type_to_primitive_type(type):
-    return _json_type_to_primitive_type.get(type)
+def json_type_to_simple_type(type):
+    return _json_type_to_simple_type.get(base_type(type))
 
 
 _python_type_to_json_type = {
@@ -339,3 +334,27 @@ if PY2:
 
 for k, v in items(_python_type_to_json_type):
     _python_type_to_json_type[k.__name__] = v
+
+json_type_to_code = {
+    T_IS_NULL: _U,
+    T_BOOLEAN: _B,
+    T_INTEGER: _I,
+    T_NUMBER: _N,
+    T_TIME: _T,
+    T_INTERVAL: _D,
+    T_TEXT: _S,
+    T_ARRAY: _A,
+}
+
+python_type_to_json_type_code = {
+    int: _N,
+    text: _S,
+    float: _N,
+    Decimal: _N,
+    bool: _B,
+    NullType: _U,
+    none_type: _U,
+    Date: _N,
+    datetime: _N,
+    date: _N,
+}

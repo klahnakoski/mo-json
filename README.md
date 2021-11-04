@@ -2,8 +2,8 @@
 
 |Branch      |Status   |
 |------------|---------|
-|master      | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.org/klahnakoski/mo-json) |
-|dev         | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=dev)](https://travis-ci.org/klahnakoski/mo-json)  |
+|master      | [![Build Status](https://app.travis-ci.com/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.com/github/klahnakoski/mo-json) |
+|dev         | [![Build Status](https://app.travis-ci.com/klahnakoski/mo-json.svg?branch=dev)](https://travis-ci.com/github/klahnakoski/mo-json)  |
 
 This set of modules provides the following benefits:
 

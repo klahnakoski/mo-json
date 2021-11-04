@@ -25,7 +25,6 @@ from mo_dots import (
     split_field,
     concat_field,
 )
-from mo_dots.objects import OBJ
 from mo_future import (
     binary_type,
     generator_types,
@@ -33,8 +32,12 @@ from mo_future import (
     is_binary,
     is_text,
     sort_using_key,
-    text,
+    text, first,
 )
+from mo_logs import Log
+from mo_logs.strings import quote
+from mo_times import Date, Duration
+
 from mo_json import (
     BOOLEAN,
     ESCAPE_DCT,
@@ -44,7 +47,7 @@ from mo_json import (
     NUMBER,
     STRING,
     float2json,
-    datetime2unix,
+    datetime2unix, python_type_to_json_type, quote, python_type_to_json_type_code
 )
 from mo_json.encoder import (
     COLON,
@@ -53,9 +56,6 @@ from mo_json.encoder import (
     json_encoder,
     problem_serializing,
 )
-from mo_logs import Log
-from mo_logs.strings import quote
-from mo_times import Date, Duration
 
 
 def encode_property(name):
@@ -166,7 +166,7 @@ def _untype_value(value):
     elif _type is NullType:
         return None
     elif _type is DataObject:
-        return _untype_value(_get(value, OBJ))
+        return _untype_value(_get(value, SLOT))
     elif _type in generator_types:
         return _untype_list(value)
     else:
@@ -365,7 +365,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 # ALLOW PRIMITIVE MULTIVALUES
                 value = [v for v in value if v != None]
                 types = list(set(
-                    json_type_to_inserter_type[python_type_to_json_type[v.__class__]]
+                    python_type_to_json_type_code[v.__class__]
                     for v in value
                 ))
                 if len(types) == 0:  # HANDLE LISTS WITH Nones IN THEM
@@ -523,7 +523,7 @@ def _dict2json(value, sub_schema, path, net_new_properties, buffer):
         if k not in sub_schema:
             sub_schema[k] = {}
             net_new_properties.append(path + [k])
-        append(buffer, encode_basestring(encode_property(k)))
+        append(buffer, quote(encode_property(k)))
         append(buffer, COLON)
         typed_encode(v, sub_schema[k], path + [k], net_new_properties, buffer)
     if prefix is COMMA:
