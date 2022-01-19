@@ -328,5 +328,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "5.48.21241"
+    "version": "6.0.0"
 }
