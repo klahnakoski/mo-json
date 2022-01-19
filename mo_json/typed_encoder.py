@@ -197,7 +197,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             value_json_type = python_type_to_json_type[value.__class__]
             column_json_type = es_type_to_json_type[sub_schema.es_type]
 
-            if same_json_type(value_json_type, column_json_type):
+            if value_json_type == column_json_type:
                 pass  # ok
             elif value_json_type == ARRAY and all(
                 python_type_to_json_type[v.__class__] == column_json_type
