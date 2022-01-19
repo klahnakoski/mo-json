@@ -1,10 +1,12 @@
+# encoding: utf-8
 #
-# ALL_TYPES = {IS_NULL: IS_NULL, BOOLEAN: BOOLEAN, INTEGER: INTEGER, NUMBER: NUMBER, TIME:TIME, INTERVAL:INTERVAL, STRING: STRING, OBJECT: OBJECT, NESTED: NESTED, EXISTS: EXISTS}
-# JSON_TYPES = (BOOLEAN, INTEGER, NUMBER, STRING, OBJECT)
-# NUMBER_TYPES = (INTEGER, NUMBER, TIME, INTERVAL)
-# PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
-# INTERNAL = (EXISTS, OBJECT, NESTED)
-# STRUCT = (OBJECT, NESTED)
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at http://mozilla.org/MPL/2.0/.
+#
+# Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
+#
+import re
 from datetime import datetime, date
 from decimal import Decimal
 
@@ -14,13 +16,13 @@ from mo_logs import Log
 from mo_times import Date
 
 
-def ToJsonType(value):
+def to_json_type(value):
     if isinstance(value, JsonType):
         return value
     try:
         return _type_to_json_type[value]
     except Exception:
-        return T_UNKNOWN
+        return T_JSON
 
 
 class JsonType(object):
@@ -32,7 +34,7 @@ class JsonType(object):
                 Log.error("Not allowed")
 
     def __or__(self, other):
-        other = ToJsonType(other)
+        other = to_json_type(other)
         if self is T_IS_NULL:
             return other
 
@@ -79,7 +81,7 @@ class JsonType(object):
         return output
 
     def __hash__(self):
-        return hash(self.tuple())
+        return hash(tuple(sorted(self.__dict__.keys())))
 
     def leaves(self):
         if self in T_PRIMITIVE:
@@ -88,12 +90,6 @@ class JsonType(object):
             for k, v in self.__dict__.items():
                 for p, t in v.leaves():
                     yield concat_field(k, p), t
-
-    def tuple(self):
-        return tuple(
-            (k, v.tuple() if isinstance(v, JsonType) else v)
-            for k, v in sorted(self.__dict__.items(), key=lambda p: p[0])
-        )
 
     def __contains__(self, item):
         if not isinstance(item, JsonType):
@@ -144,9 +140,10 @@ class JsonType(object):
         RETURN self AT THE END OF path
         :param path
         """
-
         acc = self
         for step in reversed(split_field(path)):
+            if IS_PRIMITIVE_KEY.match(step):
+                continue
             acc = JsonType(**{step: acc})
         return acc
 
@@ -173,9 +170,9 @@ def base_type(type_):
     ld = len(d)
     while ld == 1:
         n, t = first(d.items())
-        if n in _primitive_type_codes:
+        if IS_PRIMITIVE_KEY.match(n):
             return type_
-        if n in (_A, _U):
+        if t in (ARRAY, JSON):
             return type_
         type_ = t
         d = t.__dict__
@@ -216,6 +213,7 @@ STRING = "string"
 OBJECT = "object"
 ARRAY = "nested"
 EXISTS = "exists"
+JSON = "any json"
 
 ALL_TYPES = {
     IS_NULL: IS_NULL,
@@ -235,8 +233,8 @@ PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
 INTERNAL = (EXISTS, OBJECT, ARRAY)
 STRUCT = (OBJECT, ARRAY)
 
-_B, _I, _N, _T, _D, _S, _U, _A = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~u~", "~a~"
-_primitive_type_codes = (_B, _I, _N, _T, _D, _S)
+_B, _I, _N, _T, _D, _S, _A, _J = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~j~"
+IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 
 T_IS_NULL = _new(JsonType)
 T_BOOLEAN = _primitive(_B, BOOLEAN)
@@ -246,7 +244,7 @@ T_TIME = _primitive(_T, TIME)
 T_INTERVAL = _primitive(_D, INTERVAL)  # d FOR DELTA
 T_TEXT = _primitive(_S, STRING)
 T_ARRAY = _primitive(_A, ARRAY)
-T_UNKNOWN = _primitive(_U, "unknown")
+T_JSON = _primitive(_J, JSON)
 
 T_PRIMITIVE = _new(JsonType)
 T_PRIMITIVE.__dict__ = [
@@ -307,6 +305,7 @@ _json_type_to_simple_type = {
     T_INTERVAL: NUMBER,
     T_TEXT: STRING,
     T_ARRAY: ARRAY,
+    T_JSON: OBJECT,
 }
 
 
@@ -335,8 +334,8 @@ if PY2:
 for k, v in items(_python_type_to_json_type):
     _python_type_to_json_type[k.__name__] = v
 
-json_type_to_code = {
-    T_IS_NULL: _U,
+json_type_to_key = {
+    T_IS_NULL: _J,
     T_BOOLEAN: _B,
     T_INTEGER: _I,
     T_NUMBER: _N,
@@ -346,15 +345,18 @@ json_type_to_code = {
     T_ARRAY: _A,
 }
 
-python_type_to_json_type_code = {
-    int: _N,
-    text: _S,
+python_type_to_json_type_key = {
+    bool: _B,
+    int: _I,
     float: _N,
     Decimal: _N,
-    bool: _B,
-    NullType: _U,
-    none_type: _U,
-    Date: _N,
-    datetime: _N,
-    date: _N,
+    Date: _T,
+    datetime: _T,
+    date: _T,
+    text: _S,
+    NullType: _J,
+    none_type: _J,
+    list: _A,
+    set: _A,
 }
+

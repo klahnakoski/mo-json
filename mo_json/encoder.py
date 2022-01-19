@@ -371,7 +371,7 @@ def pretty_json(value):
             if (
                 len(js) < ARRAY_MIN_ITEMS
                 and max_len <= ARRAY_ITEM_MAX_LENGTH
-                and max(*[j.find("\n") for j in js]) == -1
+                and not any("\n" in j for j in js)
             ):
                 # ALL TINY VALUES
                 num_columns = max(
