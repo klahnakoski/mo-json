@@ -44,7 +44,7 @@ class TestPyPyJSON(unittest.TestCase):
         Log.note("JSON = {{json}}", json= output)
 
     def test_unicode1(self):
-        output = value2json({"comment": u"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"})
+        output = value2json({"comment": "Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"})
         assert output == u'{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
 
         if not isinstance(output, text):
@@ -58,7 +58,7 @@ class TestPyPyJSON(unittest.TestCase):
             Log.error("expecting text json")
 
     def test_unicode3(self):
-        output = value2json({"comment": u"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"})
+        output = value2json({"comment": "testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"})
         assert output == u'{"comment":"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"}'
         if not isinstance(output, text):
             Log.error("expecting unicode json")
@@ -108,7 +108,7 @@ class TestPyPyJSON(unittest.TestCase):
     def test_bad_long_json(self):
         test = value2json({"values": [i for i in range(1000)]})
         test = test[:1000] + "|" + test[1000:]
-        expected = u"Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222, 22...\n\t                       ^\n"
+        expected = "Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222, 22...\n\t                       ^\n"
         # expected = u'Can not decode JSON at:\n\t...9,270,271,272,273,27|4,275,276,277,278,2...\n\t                       ^\n'
         try:
             output = json2value(test)

@@ -332,7 +332,6 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             elif any(
                 v.__class__ in (Data, dict, set, list, tuple, FlatList) for v in value
             ):
-                # THIS IS NOT DONE BECAUSE
                 if len(value) == 1:
                     if ARRAY_KEY in sub_schema:
                         append(buffer, "{")
@@ -477,9 +476,9 @@ def _list2json(value, sub_schema, path, net_new_properties, buffer):
             sep = COMMA
             typed_encode(v, sub_schema, path, net_new_properties, buffer)
         append(buffer, "]")
-        append(buffer, COMMA)
-        append(buffer, QUOTED_EXISTS_KEY)
-        append(buffer, text(len(value)))
+        # append(buffer, COMMA)
+        # append(buffer, QUOTED_EXISTS_KEY)
+        # append(buffer, text(len(value)))
 
 
 def _multivalue2json(value, sub_schema, path, net_new_properties, buffer):
@@ -541,6 +540,7 @@ def _dict2json(value, sub_schema, path, net_new_properties, buffer):
 IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
 BOOLEAN_KEY = "~b~"
 NUMBER_KEY = "~n~"
+INTEGER_KEY = "~i~"
 STRING_KEY = "~s~"
 ARRAY_KEY = "~N~"
 EXISTS_KEY = "~e~"
@@ -549,6 +549,7 @@ append = UnicodeBuilder.append
 
 QUOTED_BOOLEAN_KEY = quote(BOOLEAN_KEY) + COLON
 QUOTED_NUMBER_KEY = quote(NUMBER_KEY) + COLON
+QUOTED_INTEGER_KEY = quote(INTEGER_KEY) + COLON
 QUOTED_STRING_KEY = quote(STRING_KEY) + COLON
 QUOTED_ARRAY_KEY = quote(ARRAY_KEY) + COLON
 QUOTED_EXISTS_KEY = quote(EXISTS_KEY) + COLON
@@ -556,6 +557,7 @@ QUOTED_EXISTS_KEY = quote(EXISTS_KEY) + COLON
 inserter_type_to_json_type = {
     BOOLEAN_KEY: BOOLEAN,
     NUMBER_KEY: NUMBER,
+    INTEGER_KEY: INTEGER,
     STRING_KEY: STRING,
 }
 
