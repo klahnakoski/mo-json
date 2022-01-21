@@ -1,9 +1,11 @@
 # More JSON Tools
 
-|Branch      |Status   |
-|------------|---------|
-|master      | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.org/klahnakoski/mo-json) |
-|dev         | [![Build Status](https://travis-ci.org/klahnakoski/mo-json.svg?branch=dev)](https://travis-ci.org/klahnakoski/mo-json)  |
+
+[![PyPI Latest Release](https://img.shields.io/pypi/v/mo-json.svg)](https://pypi.org/project/mo-json/)
+[![Build Status](https://app.travis-ci.com/klahnakoski/mo-json.svg?branch=master)](https://travis-ci.com/github/klahnakoski/mo-json)
+ [![Coverage Status](https://coveralls.io/repos/github/klahnakoski/mo-json/badge.svg?branch=dev)](https://coveralls.io/github/klahnakoski/mo-json?branch=dev)
+[![Downloads](https://pepy.tech/badge/mo-json)](https://pepy.tech/project/mo-json)
+
 
 This set of modules provides the following benefits:
 
@@ -11,6 +13,16 @@ This set of modules provides the following benefits:
 * More flexibility  in what's accepted as "JSON"
 * Iterate over massive JSON easily (`mo_json.stream`)
 * Provide a bijection between strictly typed JSON, and dynamic typed JSON.
+
+
+## Recent Changes
+
+* **Version 6.x.x** - Typed encoder no longer encodes to typed multivalues, rather, encodes to array of typed values.  For example, instead of 
+
+      {"a":{"~n~":[1, 2]}}
+  we get 
+      
+      {"a":[{"~n~":1},{"~n~":2}]} 
 
 ## Usage
 
