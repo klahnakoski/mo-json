@@ -349,7 +349,7 @@ class Parser(object):
         return c, index + 1
 
 
-def parse(json, query_path, expected_vars=NO_VARS):
+def parse(json, query_path=None, expected_vars=NO_VARS):
     """
     INTENDED TO TREAT JSON AS A STREAM; USING MINIMAL MEMORY WHILE IT ITERATES
     THROUGH THE STRUCTURE.  ASSUMING THE JSON IS LARGE, AND HAS A HIGH LEVEL
@@ -370,6 +370,8 @@ def parse(json, query_path, expected_vars=NO_VARS):
                           MORE-THAN-ONE PASS IS REQUIRED
     :return: RETURNS AN ITERATOR OVER ALL OBJECTS FROM ARRAY LOCATED AT query_path
     """
+    if not query_path:
+        query_path = "."
     for v, i in Parser(json, query_path, expected_vars).parse():
         yield v
 
