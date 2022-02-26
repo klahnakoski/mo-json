@@ -403,7 +403,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
             Log.error("JSON string is only whitespace")
 
         c = e
-        while "Expecting '" in c.cause and "' delimiter: line" in c.cause:
+        while c.cause and "Expecting '" in c.cause and "' delimiter: line" in c.cause:
             c = c.cause
 
         if "Expecting '" in c and "' delimiter: line" in c:
