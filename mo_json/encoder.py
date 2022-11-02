@@ -16,7 +16,7 @@ from datetime import date, datetime, timedelta
 from decimal import Decimal
 from math import floor
 
-from mo_dots import Data, FlatList, NullType, SLOT, is_data, is_list, unwrap
+from mo_dots import Data, FlatList, NullType, SLOT, is_data, is_list, from_data
 from mo_future import (
     PYPY,
     binary_type,
@@ -281,7 +281,7 @@ def pretty_json(value):
             return "null"
         elif is_data(value):
             try:
-                value = unwrap(value)
+                value = from_data(value)
                 items = sort_using_key(value.items(), lambda r: r[0])
                 values = [
                     quote(k) + PRETTY_COLON + pretty_json(v)
