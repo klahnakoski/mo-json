@@ -16,8 +16,8 @@ from mo_logs import Log
 from mo_times import Date
 
 
-def to_json_type(value):
-    if isinstance(value, JsonType):
+def to_jx_type(value):
+    if isinstance(value, JxType):
         return value
     try:
         return _type_to_json_type[value]
@@ -25,16 +25,16 @@ def to_json_type(value):
         return T_JSON
 
 
-class JsonType(object):
+class JxType(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
-            if isinstance(v, JsonType):
+            if isinstance(v, JxType):
                 setattr(self, k, v)
             else:
                 Log.error("Not allowed")
 
     def __or__(self, other):
-        other = to_json_type(other)
+        other = to_jx_type(other)
         if self is T_IS_NULL:
             return other
 
@@ -63,7 +63,7 @@ class JsonType(object):
                 sd[k] = ov
                 dirty = True
                 continue
-            if isinstance(sv, JsonType) and isinstance(ov, JsonType):
+            if isinstance(sv, JxType) and isinstance(ov, JxType):
                 new_value = sv | ov
                 if new_value is sv:
                     continue
@@ -76,7 +76,7 @@ class JsonType(object):
         if not dirty:
             return self
 
-        output = _new(JsonType)
+        output = _new(JxType)
         output.__dict__ = sd
         return output
 
@@ -92,7 +92,7 @@ class JsonType(object):
                     yield concat_field(k, p), t
 
     def __contains__(self, item):
-        if not isinstance(item, JsonType):
+        if not isinstance(item, JxType):
             return False
         sd = self.__dict__
         od = item.__dict__
@@ -105,7 +105,7 @@ class JsonType(object):
         return True
 
     def __eq__(self, other):
-        if not isinstance(other, JsonType):
+        if not isinstance(other, JxType):
             return False
 
         if self is T_INTEGER or self is T_NUMBER:
@@ -144,17 +144,20 @@ class JsonType(object):
         for step in reversed(split_field(path)):
             if IS_PRIMITIVE_KEY.match(step):
                 continue
-            acc = JsonType(**{step: acc})
+            acc = JxType(**{step: acc})
         return acc
 
     def __data__(self):
         return {
-            k: v.__data__() if isinstance(v, JsonType) else str(v)
+            k: v.__data__() if isinstance(v, JxType) else str(v)
             for k, v in self.__dict__.items()
         }
 
     def __str__(self):
         return str(self.__data__())
+
+    def __repr__(self):
+        return "JxType(**"+str(self.__data__())+")"
 
 
 def base_type(type_):
@@ -198,7 +201,7 @@ _new = object.__new__
 
 
 def _primitive(name, value):
-    output = _new(JsonType)
+    output = _new(JxType)
     setattr(output, name, value)
     return output
 
@@ -236,7 +239,7 @@ STRUCT = (OBJECT, ARRAY)
 _B, _I, _N, _T, _D, _S, _A, _J = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~j~"
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 
-T_IS_NULL = _new(JsonType)
+T_IS_NULL = _new(JxType)
 T_BOOLEAN = _primitive(_B, BOOLEAN)
 T_INTEGER = _primitive(_I, INTEGER)
 T_NUMBER = _primitive(_N, NUMBER)
@@ -246,7 +249,7 @@ T_TEXT = _primitive(_S, STRING)
 T_ARRAY = _primitive(_A, ARRAY)
 T_JSON = _primitive(_J, JSON)
 
-T_PRIMITIVE = _new(JsonType)
+T_PRIMITIVE = _new(JxType)
 T_PRIMITIVE.__dict__ = [
     (x, x.update(d))[0]
     for x in [{}]
@@ -259,7 +262,7 @@ T_PRIMITIVE.__dict__ = [
         T_TEXT.__dict__,
     ]
 ][0]
-T_NUMBER_TYPES = _new(JsonType)
+T_NUMBER_TYPES = _new(JxType)
 T_NUMBER_TYPES.__dict__ = [
     (x, x.update(d))[0]
     for x in [{}]
@@ -287,16 +290,16 @@ def value_to_json_type(value):
     if is_many(value):
         return _primitive(_A, union_type(*(value_to_json_type(v) for v in value)))
     elif is_data(value):
-        return JsonType(**{k: value_to_json_type(v) for k, v in value.items()})
+        return JxType(**{k: value_to_json_type(v) for k, v in value.items()})
     else:
-        return _python_type_to_json_type[value.__class__]
+        return _python_type_to_jx_type[value.__class__]
 
 
-def python_type_to_json_type(type):
-    return _python_type_to_json_type[type]
+def python_type_to_jx_type(type):
+    return _python_type_to_jx_type[type]
 
 
-_json_type_to_simple_type = {
+_jx_type_to_json_type = {
     T_IS_NULL: IS_NULL,
     T_BOOLEAN: BOOLEAN,
     T_INTEGER: NUMBER,
@@ -309,11 +312,11 @@ _json_type_to_simple_type = {
 }
 
 
-def json_type_to_simple_type(type):
-    return _json_type_to_simple_type.get(base_type(type))
+def jx_type_to_json_type(jx_type):
+    return _jx_type_to_json_type.get(base_type(jx_type))
 
 
-_python_type_to_json_type = {
+_python_type_to_jx_type = {
     int: T_INTEGER,
     text: T_TEXT,
     float: T_NUMBER,
@@ -327,14 +330,14 @@ _python_type_to_json_type = {
 }
 
 if PY2:
-    _python_type_to_json_type[str] = T_TEXT
-    _python_type_to_json_type[long] = T_INTEGER
+    _python_type_to_jx_type[str] = T_TEXT
+    _python_type_to_jx_type[long] = T_INTEGER
 
 
-for k, v in items(_python_type_to_json_type):
-    _python_type_to_json_type[k.__name__] = v
+for k, v in items(_python_type_to_jx_type):
+    _python_type_to_jx_type[k.__name__] = v
 
-json_type_to_key = {
+jx_type_to_key = {
     T_IS_NULL: _J,
     T_BOOLEAN: _B,
     T_INTEGER: _I,
@@ -345,7 +348,7 @@ json_type_to_key = {
     T_ARRAY: _A,
 }
 
-python_type_to_json_type_key = {
+python_type_to_jx_type_key = {
     bool: _B,
     int: _I,
     float: _N,

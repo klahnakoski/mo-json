@@ -45,9 +45,9 @@ from mo_json import (
     STRING,
     float2json,
     datetime2unix,
-    python_type_to_json_type,
+    python_type_to_jx_type,
     quote,
-    python_type_to_json_type_key,
+    python_type_to_jx_type_key,
 )
 from mo_json.encoder import (
     COLON,
@@ -194,15 +194,15 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
     try:
         # from jx_base import Column
         if sub_schema.__class__.__name__ == "Column":
-            value_json_type = python_type_to_json_type[value.__class__]
+            value_json_type = python_type_to_jx_type[value.__class__]
             column_json_type = es_type_to_json_type[sub_schema.es_type]
 
             if value_json_type == column_json_type:
                 pass  # ok
             elif value_json_type == ARRAY and all(
-                python_type_to_json_type[v.__class__] == column_json_type
-                for v in value
-                if v != None
+                    python_type_to_jx_type[v.__class__] == column_json_type
+                    for v in value
+                    if v != None
             ):
                 pass  # empty arrays can be anything
             else:
@@ -367,7 +367,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 # ALLOW PRIMITIVE MULTIVALUES
                 value = [v for v in value if v != None]
                 types = list(set(
-                    python_type_to_json_type_key[v.__class__] for v in value
+                    python_type_to_jx_type_key[v.__class__] for v in value
                 ))
                 if len(types) == 0:  # HANDLE LISTS WITH Nones IN THEM
                     append(buffer, "{")
