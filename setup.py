@@ -15,5 +15,5 @@ setup(
     name='mo-json',
     packages=["mo_json"],
     url='https://github.com/klahnakoski/mo-json',
-    version='6.218.22308'
+    version='6.219.22308'
 )
