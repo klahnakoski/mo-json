@@ -13,8 +13,8 @@
     "description": "More JSON Tools! ",
     "extras_require": {"tests": ["pyLibrary", "mo-testing", "mo-threads"]},
     "install_requires": [
-                         "hjson",   "mo-dots==9.238.22316", "mo-future==6.230.22310",
-          "mo-logs==7.238.22316",  "mo-times==5.239.22316"
+                         "hjson",   "mo-dots==9.249.22317", "mo-future==6.230.22310",
+          "mo-logs==7.249.22317",  "mo-times==5.249.22317"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -342,5 +342,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.239.22316"
+    "version": "6.249.22317"
 }
