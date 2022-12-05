@@ -23,7 +23,7 @@ def to_jx_type(value):
     try:
         return _type_to_json_type[value]
     except Exception:
-        return T_JSON
+        return JX_JSON
 
 
 class JxType(object):
@@ -36,7 +36,7 @@ class JxType(object):
 
     def __or__(self, other):
         other = to_jx_type(other)
-        if self is T_IS_NULL:
+        if self is JX_IS_NULL:
             return other
 
         sd = self.__dict__.copy()
@@ -58,7 +58,7 @@ class JxType(object):
                             del sd[kk]
                         except Exception as cause:
                             pass
-                    sd[k] = T_NUMBER.__dict__[k]
+                    sd[k] = JX_NUMBER.__dict__[k]
                     dirty = True
                     continue
                 sd[k] = ov
@@ -81,6 +81,9 @@ class JxType(object):
         output.__dict__ = sd
         return output
 
+    def __getitem__(self, item):
+        return self.__dict__.get(item)
+
     def __hash__(self):
         return hash(tuple(sorted(self.__dict__.keys())))
 
@@ -93,6 +96,8 @@ class JxType(object):
                     yield concat_field(k, p), t
 
     def __contains__(self, item):
+        if isinstance(item, str):
+            return item in self.__dict__
         if not isinstance(item, JxType):
             return False
         sd = self.__dict__
@@ -109,8 +114,8 @@ class JxType(object):
         if not isinstance(other, JxType):
             return False
 
-        if self is T_INTEGER or self is T_NUMBER:
-            if other is T_INTEGER or other is T_NUMBER:
+        if self is JX_INTEGER or self is JX_NUMBER:
+            if other is JX_INTEGER or other is JX_NUMBER:
                 return True
 
         # DETECT DIFFERENCE BY ONLY NAME DEPTH
@@ -158,7 +163,7 @@ class JxType(object):
         return str(self.__data__())
 
     def __repr__(self):
-        return "JxType(**"+str(self.__data__())+")"
+        return "JxType(**" + str(self.__data__()) + ")"
 
 
 def base_type(type_):
@@ -187,7 +192,7 @@ def base_type(type_):
 def union_type(*types):
     if len(types) == 1 and is_many(types[0]):
         Log.error("expecting many parameters")
-    output = T_IS_NULL
+    output = JX_IS_NULL
 
     for t in types:
         output |= t
@@ -240,27 +245,27 @@ STRUCT = (OBJECT, ARRAY)
 _B, _I, _N, _T, _D, _S, _A, _J = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~j~"
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 
-T_IS_NULL = _new(JxType)
-T_BOOLEAN = _primitive(_B, BOOLEAN)
-T_INTEGER = _primitive(_I, INTEGER)
-T_NUMBER = _primitive(_N, NUMBER)
-T_TIME = _primitive(_T, TIME)
-T_INTERVAL = _primitive(_D, INTERVAL)  # d FOR DELTA
-T_TEXT = _primitive(_S, STRING)
-T_ARRAY = _primitive(_A, ARRAY)
-T_JSON = _primitive(_J, JSON)
+JX_IS_NULL = _new(JxType)
+JX_BOOLEAN = _primitive(_B, BOOLEAN)
+JX_INTEGER = _primitive(_I, INTEGER)
+JX_NUMBER = _primitive(_N, NUMBER)
+JX_TIME = _primitive(_T, TIME)
+JX_INTERVAL = _primitive(_D, INTERVAL)  # d FOR DELTA
+JX_TEXT = _primitive(_S, STRING)
+JX_ARRAY = _primitive(_A, ARRAY)
+JX_JSON = _primitive(_J, JSON)
 
 T_PRIMITIVE = _new(JxType)
 T_PRIMITIVE.__dict__ = [
     (x, x.update(d))[0]
     for x in [{}]
     for d in [
-        T_BOOLEAN.__dict__,
-        T_INTEGER.__dict__,
-        T_NUMBER.__dict__,
-        T_TIME.__dict__,
-        T_INTERVAL.__dict__,
-        T_TEXT.__dict__,
+        JX_BOOLEAN.__dict__,
+        JX_INTEGER.__dict__,
+        JX_NUMBER.__dict__,
+        JX_TIME.__dict__,
+        JX_INTERVAL.__dict__,
+        JX_TEXT.__dict__,
     ]
 ][0]
 T_NUMBER_TYPES = _new(JxType)
@@ -268,22 +273,22 @@ T_NUMBER_TYPES.__dict__ = [
     (x, x.update(d))[0]
     for x in [{}]
     for d in [
-        T_INTEGER.__dict__,
-        T_NUMBER.__dict__,
-        T_TIME.__dict__,
-        T_INTERVAL.__dict__,
+        JX_INTEGER.__dict__,
+        JX_NUMBER.__dict__,
+        JX_TIME.__dict__,
+        JX_INTERVAL.__dict__,
     ]
 ][0]
 
 _type_to_json_type = {
-    IS_NULL: T_IS_NULL,
-    BOOLEAN: T_BOOLEAN,
-    INTEGER: T_INTERVAL,
-    NUMBER: T_NUMBER,
-    TIME: T_TIME,
-    INTERVAL: T_INTERVAL,
-    STRING: T_TEXT,
-    ARRAY: T_ARRAY,
+    IS_NULL: JX_IS_NULL,
+    BOOLEAN: JX_BOOLEAN,
+    INTEGER: JX_INTERVAL,
+    NUMBER: JX_NUMBER,
+    TIME: JX_TIME,
+    INTERVAL: JX_INTERVAL,
+    STRING: JX_TEXT,
+    ARRAY: JX_ARRAY,
 }
 
 
@@ -317,19 +322,19 @@ def value_to_jx_type(value):
 
 
 def python_type_to_jx_type(type):
-    return _python_type_to_jx_type[type]
+    return _python_type_to_jx_type.get(type, JX_JSON)
 
 
 _jx_type_to_json_type = {
-    T_IS_NULL: IS_NULL,
-    T_BOOLEAN: BOOLEAN,
-    T_INTEGER: NUMBER,
-    T_NUMBER: NUMBER,
-    T_TIME: NUMBER,
-    T_INTERVAL: NUMBER,
-    T_TEXT: STRING,
-    T_ARRAY: ARRAY,
-    T_JSON: OBJECT,
+    JX_IS_NULL: IS_NULL,
+    JX_BOOLEAN: BOOLEAN,
+    JX_INTEGER: NUMBER,
+    JX_NUMBER: NUMBER,
+    JX_TIME: NUMBER,
+    JX_INTERVAL: NUMBER,
+    JX_TEXT: STRING,
+    JX_ARRAY: ARRAY,
+    JX_JSON: OBJECT,
 }
 
 
@@ -338,35 +343,35 @@ def jx_type_to_json_type(jx_type):
 
 
 _python_type_to_jx_type = {
-    int: T_INTEGER,
-    text: T_TEXT,
-    float: T_NUMBER,
-    Decimal: T_NUMBER,
-    bool: T_BOOLEAN,
-    NullType: T_IS_NULL,
-    none_type: T_IS_NULL,
-    Date: T_TIME,
-    datetime: T_TIME,
-    date: T_TIME,
+    int: JX_INTEGER,
+    text: JX_TEXT,
+    float: JX_NUMBER,
+    Decimal: JX_NUMBER,
+    bool: JX_BOOLEAN,
+    NullType: JX_IS_NULL,
+    none_type: JX_IS_NULL,
+    Date: JX_TIME,
+    datetime: JX_TIME,
+    date: JX_TIME,
 }
 
 if PY2:
-    _python_type_to_jx_type[str] = T_TEXT
-    _python_type_to_jx_type[long] = T_INTEGER
+    _python_type_to_jx_type[str] = JX_TEXT
+    _python_type_to_jx_type[long] = JX_INTEGER
 
 
 for k, v in items(_python_type_to_jx_type):
     _python_type_to_jx_type[k.__name__] = v
 
 jx_type_to_key = {
-    T_IS_NULL: _J,
-    T_BOOLEAN: _B,
-    T_INTEGER: _I,
-    T_NUMBER: _N,
-    T_TIME: _T,
-    T_INTERVAL: _D,
-    T_TEXT: _S,
-    T_ARRAY: _A,
+    JX_IS_NULL: _J,
+    JX_BOOLEAN: _B,
+    JX_INTEGER: _I,
+    JX_NUMBER: _N,
+    JX_TIME: _T,
+    JX_INTERVAL: _D,
+    JX_TEXT: _S,
+    JX_ARRAY: _A,
 }
 
 python_type_to_jx_type_key = {
@@ -383,4 +388,3 @@ python_type_to_jx_type_key = {
     list: _A,
     set: _A,
 }
-
