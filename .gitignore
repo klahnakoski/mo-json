@@ -8,3 +8,6 @@
 .svn
 *.iml
 
+/setup.py
+
+
