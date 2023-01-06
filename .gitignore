@@ -7,4 +7,5 @@
 .idea
 .svn
 *.iml
-setup.py
+./setup.py
+
