@@ -7,7 +7,6 @@
 #
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-import re
 from datetime import date, datetime, timedelta
 from decimal import Decimal
 
@@ -24,6 +23,10 @@ from mo_dots import (
     split_field,
     concat_field,
 )
+from mo_logs import Log
+from mo_logs.strings import quote
+from mo_times import Date, Duration
+
 from mo_future import (
     binary_type,
     generator_types,
@@ -54,9 +57,7 @@ from mo_json.encoder import (
     json_encoder,
     problem_serializing,
 )
-from mo_logs import Log
-from mo_logs.strings import quote
-from mo_times import Date, Duration
+from mo_json.types import BOOLEAN_KEY, NUMBER_KEY, INTEGER_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, IS_TYPE_KEY
 
 
 def encode_property(name):
@@ -104,7 +105,7 @@ def get_nested_path(typed_path):
     nested_path = (parent,)
     for i, p in enumerate(path[:-1]):
         if p == ARRAY_KEY:
-            step = concat_field(parent, join_field(path[0 : i + 1]))
+            step = concat_field(parent, join_field(path[0: i + 1]))
             nested_path = (step,) + nested_path
     return nested_path
 
@@ -116,17 +117,10 @@ def untyped(value):
 def _untype_list(value):
     if any(is_data(v) for v in value):
         # MAY BE MORE TYPED OBJECTS IN THIS LIST
-        output = [_untype_value(v) for v in value]
+        return [_untype_value(v) for v in value]
     else:
         # LIST OF PRIMITIVE VALUES
-        output = value
-
-    if len(output) == 0:
-        return None
-    elif len(output) == 1:
-        return output[0]
-    else:
-        return output
+        return value
 
 
 def _untype_dict(value):
@@ -191,7 +185,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             if value_json_type == column_json_type:
                 pass  # ok
             elif value_json_type == ARRAY and all(
-                python_type_to_jx_type[v.__class__] == column_json_type for v in value if v != None
+                    python_type_to_jx_type[v.__class__] == column_json_type for v in value if v != None
             ):
                 pass  # empty arrays can be anything
             else:
@@ -493,14 +487,6 @@ def _dict2json(value, sub_schema, path, net_new_properties, buffer):
         append(buffer, QUOTED_EXISTS_KEY)
         append(buffer, "1}")
 
-
-IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
-BOOLEAN_KEY = "~b~"
-NUMBER_KEY = "~n~"
-INTEGER_KEY = "~i~"
-STRING_KEY = "~s~"
-ARRAY_KEY = "~N~"
-EXISTS_KEY = "~e~"
 
 append = UnicodeBuilder.append
 

@@ -12,7 +12,7 @@
         "Programming Language :: Python :: 3.10"
     ],
     "description": "More JSON Tools! ",
-    "extras_require": {"tests": ["pyLibrary", "mo-testing", "mo-threads"]},
+    "extras_require": {"tests": ["mo-testing", "mo-threads"]},
     "install_requires": [
                          "hjson",   "mo-dots==9.368.23092", "mo-future==7.340.23006",
           "mo-logs==7.371.23118",  "mo-times==5.371.23118"
