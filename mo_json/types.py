@@ -47,9 +47,9 @@ class JxType(object):
             if sv is ov:
                 continue
             if sv is None:
-                if k in JX_NUMBER_TYPES.__dict__ and sd.get(_N):
+                if k in JX_NUMBER_TYPES.__dict__ and sd.get(NUMBER_KEY):
                     continue
-                elif k is _N and any(sd.get(kk) for kk in JX_NUMBER_TYPES.__dict__.keys()):
+                elif k is NUMBER_KEY and any(sd.get(kk) for kk in JX_NUMBER_TYPES.__dict__.keys()):
                     for kk in JX_NUMBER_TYPES.__dict__.keys():
                         try:
                             del sd[kk]
@@ -115,7 +115,7 @@ class JxType(object):
         return not self == other
 
     def __eq__(self, other):
-        if other is ARRAY and hasattr(self, _A):
+        if other is ARRAY and hasattr(self, ARRAY_KEY):
             # SHALLOW CHECK IF THIS IS AN ARRAY
             return True
 
@@ -172,7 +172,7 @@ class JxType(object):
 
 
 def array_of(type_):
-    return JxType(**{_A: type_})
+    return JxType(**{ARRAY_KEY: type_})
 
 
 def member_type(type_):
@@ -180,7 +180,7 @@ def member_type(type_):
     RETURN THE MEMBER TYPE, IF AN ARRAY
     """
     if type_ == ARRAY:
-        return getattr(type_, _A)
+        return getattr(type_, ARRAY_KEY)
     else:
         return type_
 
@@ -219,7 +219,7 @@ def union_type(*types):
 
 
 def array_type(item_type):
-    return _primitive(_A, item_type)
+    return _primitive(ARRAY_KEY, item_type)
 
 
 _new = object.__new__
@@ -261,19 +261,19 @@ PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
 INTERNAL = (EXISTS, OBJECT, ARRAY)
 STRUCT = (OBJECT, ARRAY)
 
-_B, _I, _N, _T, _D, _S, _A, _J = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~j~"
-ARRAY_KEY = _A
+BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~e~", "~j~"
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
+IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
 
 JX_IS_NULL = _new(JxType)
-JX_BOOLEAN = _primitive(_B, BOOLEAN)
-JX_INTEGER = _primitive(_I, INTEGER)
-JX_NUMBER = _primitive(_N, NUMBER)
-JX_TIME = _primitive(_T, TIME)
-JX_INTERVAL = _primitive(_D, INTERVAL)  # d FOR DELTA
-JX_TEXT = _primitive(_S, STRING)
-JX_ARRAY = _primitive(_A, ARRAY)
-JX_ANY = _primitive(_J, JSON)
+JX_BOOLEAN = _primitive(BOOLEAN_KEY, BOOLEAN)
+JX_INTEGER = _primitive(INTEGER_KEY, INTEGER)
+JX_NUMBER = _primitive(NUMBER_KEY, NUMBER)
+JX_TIME = _primitive(TIME_KEY, TIME)
+JX_INTERVAL = _primitive(DURATION_KEY, INTERVAL)  # d FOR DELTA
+JX_TEXT = _primitive(STRING_KEY, STRING)
+JX_ARRAY = _primitive(ARRAY_KEY, ARRAY)
+JX_ANY = _primitive(JSON_KEY, JSON)
 
 JX_PRIMITIVE = _new(JxType)
 JX_PRIMITIVE.__dict__ = [
@@ -329,7 +329,7 @@ def value_to_json_type(v):
 
 def value_to_jx_type(value):
     if is_many(value):
-        return _primitive(_A, union_type(*(value_to_json_type(v) for v in value)))
+        return _primitive(ARRAY_KEY, union_type(*(value_to_json_type(v) for v in value)))
     elif is_data(value):
         return JxType(**{k: value_to_json_type(v) for k, v in value.items()})
     else:
@@ -374,27 +374,27 @@ for k, v in items(_python_type_to_jx_type):
     _python_type_to_jx_type[k.__name__] = v
 
 jx_type_to_key = {
-    JX_IS_NULL: _J,
-    JX_BOOLEAN: _B,
-    JX_INTEGER: _I,
-    JX_NUMBER: _N,
-    JX_TIME: _T,
-    JX_INTERVAL: _D,
-    JX_TEXT: _S,
-    JX_ARRAY: _A,
+    JX_IS_NULL: JSON_KEY,
+    JX_BOOLEAN: BOOLEAN_KEY,
+    JX_INTEGER: INTEGER_KEY,
+    JX_NUMBER: NUMBER_KEY,
+    JX_TIME: TIME_KEY,
+    JX_INTERVAL: DURATION_KEY,
+    JX_TEXT: STRING_KEY,
+    JX_ARRAY: ARRAY_KEY,
 }
 
 python_type_to_jx_type_key = {
-    bool: _B,
-    int: _I,
-    float: _N,
-    Decimal: _N,
-    Date: _T,
-    datetime: _T,
-    date: _T,
-    text: _S,
-    NullType: _J,
-    none_type: _J,
-    list: _A,
-    set: _A,
+    bool: BOOLEAN_KEY,
+    int: INTEGER_KEY,
+    float: NUMBER_KEY,
+    Decimal: NUMBER_KEY,
+    Date: TIME_KEY,
+    datetime: TIME_KEY,
+    date: TIME_KEY,
+    text: STRING_KEY,
+    NullType: JSON_KEY,
+    none_type: JSON_KEY,
+    list: ARRAY_KEY,
+    set: ARRAY_KEY,
 }

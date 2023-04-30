@@ -310,6 +310,6 @@ This pure Python JSON encoder is no longer faster than a compound C/Python
 solution.*
 
 Fast JSON encoder used in `convert.value2json()` when running in Pypy. Run the
-[speedtest](https://github.com/klahnakoski/pyLibrary/blob/dev/tests/speedtest_json.py)
+[speed test](https://github.com/klahnakoski/mo-json/blob/dev/tests/speedtest_json.py)
 to compare with default implementation and ujson
 

@@ -182,3 +182,10 @@ class TestJSON(unittest.TestCase):
         test = typed_encode(value)
         expected = u'{"a":{' + quote(EXISTS_KEY) + u':1},' + quote(EXISTS_KEY) + u':1}'
         self.assertEqual(test, expected)
+
+    def test_singlton_array_of_array_decoded(self):
+        typed = {ARRAY_KEY: [{ARRAY_KEY: [{"a": 1}]}]}
+        result = untyped(typed)
+        expected = [[{"a": 1}]]
+        self.assertEqual(result, expected)
+
