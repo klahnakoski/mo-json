@@ -12,7 +12,7 @@ import datetime
 import unittest
 
 from mo_dots import wrap
-from mo_json.typed_encoder import EXISTS_KEY, NUMBER_KEY, STRING_KEY, BOOLEAN_KEY, ARRAY_KEY, untyped, INTEGER_KEY
+from mo_json.typed_encoder import EXISTS_KEY, NUMBER_KEY, STRING_KEY, BOOLEAN_KEY, ARRAY_KEY, INTEGER_KEY, detype
 from mo_json.typed_encoder import encode as typed_encode
 from mo_logs.strings import quote
 
@@ -164,7 +164,7 @@ class TestJSON(unittest.TestCase):
 
     def test_empty_object(self):
         typed = {EXISTS_KEY: 1}
-        test = untyped(typed)
+        test = detype(typed)
 
         self.assertIsInstance(test, dict)
         self.assertEqual(len(test), 0)
@@ -185,7 +185,7 @@ class TestJSON(unittest.TestCase):
 
     def test_singlton_array_of_array_decoded(self):
         typed = {ARRAY_KEY: [{ARRAY_KEY: [{"a": 1}]}]}
-        result = untyped(typed)
+        result = detype(typed)
         expected = [[{"a": 1}]]
         self.assertEqual(result, expected)
 
