@@ -57,6 +57,7 @@ from mo_json.encoder import (
     json_encoder,
     problem_serializing,
 )
+from mo_json.typed_object import TypedObject
 from mo_json.types import BOOLEAN_KEY, NUMBER_KEY, INTEGER_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, IS_TYPE_KEY
 
 
@@ -110,20 +111,20 @@ def get_nested_path(typed_path):
     return nested_path
 
 
-def untyped(value):
-    return _untype_value(value)
+def detype(value):
+    return _detype_value(value)
 
 
-def _untype_list(value):
+def _detype_list(value):
     if any(is_data(v) for v in value):
         # MAY BE MORE TYPED OBJECTS IN THIS LIST
-        return [_untype_value(v) for v in value]
+        return [_detype_value(v) for v in value]
     else:
         # LIST OF PRIMITIVE VALUES
         return value
 
 
-def _untype_dict(value):
+def _detype_dict(value):
     output = {}
 
     for k, v in value.items():
@@ -131,32 +132,34 @@ def _untype_dict(value):
             if k == EXISTS_KEY:
                 continue
             elif k == ARRAY_KEY:
-                return _untype_list(v)
+                return _detype_list(v)
             else:
                 return v
         else:
-            new_v = _untype_value(v)
+            new_v = _detype_value(v)
             if new_v is not None:
                 output[decode_property(k)] = new_v
     return output
 
 
-def _untype_value(value):
+def _detype_value(value):
     _type = _get(value, CLASS)
-    if _type is Data:
-        return _untype_dict(_get(value, SLOT))
+    if _type is TypedObject:
+        return value._boxed_value
+    elif _type is Data:
+        return _detype_dict(_get(value, SLOT))
     elif _type is dict:
-        return _untype_dict(value)
+        return _detype_dict(value)
     elif _type is FlatList:
-        return _untype_list(value.list)
+        return _detype_list(value.list)
     elif _type is list:
-        return _untype_list(value)
+        return _detype_list(value)
     elif _type is NullType:
         return None
     elif _type is DataObject:
-        return _untype_value(_get(value, SLOT))
+        return _detype_value(_get(value, SLOT))
     elif _type in generator_types:
-        return _untype_list(value)
+        return _detype_list(value)
     else:
         return value
 
