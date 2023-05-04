@@ -9,6 +9,7 @@
 from collections import OrderedDict
 
 from mo_dots import is_many, is_data, exists, is_missing
+from mo_dots.datas import register_data
 
 from mo_json import python_type_to_jx_type_key, IS_PRIMITIVE_KEY, ARRAY_KEY, EXISTS_KEY, NUMBER_KEY
 
@@ -78,9 +79,21 @@ class TypedObject(OrderedDict):
         return set(type_key)
 
     def items(self):
-        if is_missing(self._boxed_value):
+        value = self._boxed_value
+        if is_missing(value):
             return []
-        if is_data(self._boxed_value):
-            return [(k, TypedObject(v)) for k, v in self._boxed_value.items()]
-        type_key = python_type_to_jx_type_key.get(type(self._boxed_value))
-        return [(type_key, self._boxed_value)]
+        if is_data(value):
+            return [(k, TypedObject(v)) for k, v in value.items()]
+        if is_many(value):
+            return [(ARRAY_KEY, [TypedObject(v) for v in value])]
+        type_key = python_type_to_jx_type_key.get(type(value))
+        return [(type_key, value)]
+
+    def __str__(self):
+        return str(self._boxed_value)
+
+    def __repr__(self):
+        return repr(self._boxed_value)
+
+
+register_data(TypedObject)
