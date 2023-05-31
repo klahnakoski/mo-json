@@ -7,8 +7,6 @@
 #
 # Author: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from __future__ import unicode_literals
-
 import datetime
 import unittest
 
@@ -45,8 +43,8 @@ class TestJSON(unittest.TestCase):
             )
         })
         assert (
-            output
-            == '{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
+                output
+                == '{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
         )
 
         if not isinstance(output, text):
@@ -327,6 +325,11 @@ class TestJSON(unittest.TestCase):
     def test_tuple(self):
         result = value2json((1, "int"), pretty=True)
         expected = '[1, "int"]'
+        self.assertEqual(result, expected)
+
+    def test_parameters(self):
+        result = json2value('{"a": {{a}}, "b": {{b}}}', params={"a": 1, "b": 2})
+        expected = {"a": 1, "b": 2}
         self.assertEqual(result, expected)
 
 
