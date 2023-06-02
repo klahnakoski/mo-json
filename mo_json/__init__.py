@@ -30,7 +30,7 @@ from mo_future import (
 from mo_imports import delay_import
 from mo_json.types import *
 from mo_logs import Except, strings
-from mo_logs.strings import expand_template
+from mo_logs.strings import expand_template, toString, FORMATTERS
 from mo_times import Duration
 
 logger = delay_import("mo_logs.logger")
@@ -361,7 +361,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
     try:
         if params:
             # LOOKUP REFERENCES
-            json_string = expand_template(json_string, params)
+            json_string = _simple_expand(json_string, (params, ))
 
         if flexible:
             value = hjson2value(json_string)
@@ -440,6 +440,56 @@ def datetime2unix(value):
             )
     except Exception as e:
         logger.error("Can not convert {{value}}", value=value, cause=e)
+
+
+_variable_pattern = re.compile(r"\{\{([\w_\.]+(\|[^\}^\|]+)*)\}\}")
+
+
+def _simple_expand(template, seq):
+    """
+    seq IS TUPLE OF OBJECTS IN PATH ORDER INTO THE DATA TREE
+    seq[-1] IS THE CURRENT CONTEXT
+    """
+
+    def replacer(found):
+        ops = found.group(1).split("|")
+
+        path = ops[0]
+        var = path.lstrip(".")
+        depth = min(len(seq), max(1, len(path) - len(var)))
+        try:
+            val = seq[-depth]
+            if var:
+                if is_sequence(val) and float(var) == round(float(var), 0):
+                    val = val[int(var)]
+                else:
+                    val = val[var]
+            for func_name in ops[1:]:
+                parts = func_name.split("(")
+                if len(parts) > 1:
+                    val = eval(parts[0] + "(val, " + "(".join(parts[1::]))
+                else:
+                    val = FORMATTERS[func_name](val)
+            val = toString(val)
+            return val
+        except Exception as cause:
+            from mo_logs import Except
+
+            cause = Except.wrap(cause)
+            try:
+                if cause.message.find("is not JSON serializable"):
+                    # WORK HARDER
+                    val = toString(val)
+                    return val
+            except Exception as f:
+                Log.warning(
+                    "Can not expand " + "|".join(ops) + " in template: {{template_|json}}",
+                    template_=template,
+                    cause=cause,
+                )
+            return "[template expansion error: (" + str(cause.message) + ")]"
+
+    return _variable_pattern.sub(replacer, template)
 
 
 from mo_json.decoder import json_decoder

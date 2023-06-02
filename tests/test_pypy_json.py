@@ -7,14 +7,10 @@
 #
 # Author: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
-from __future__ import unicode_literals
-from __future__ import division
-
 import datetime
 import unittest
 
 from mo_dots import Data, wrap
-from mo_future import text
 from mo_testing.fuzzytestcase import FuzzyTestCase
 
 from mo_json import json2value
@@ -51,20 +47,20 @@ class TestPyPyJSON(FuzzyTestCase):
         output = value2json({"comment": "Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"})
         assert output == u'{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
 
-        if not isinstance(output, text):
+        if not isinstance(output, str):
             Log.error("expecting unicode json")
 
     def test_unicode2(self):
         output = value2json({"comment": "testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"})
 
         assert output == u'{"comment":"testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"}'
-        if not isinstance(output, text):
+        if not isinstance(output, str):
             Log.error("expecting text json")
 
     def test_unicode3(self):
         output = value2json({"comment": "testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"})
         assert output == u'{"comment":"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"}'
-        if not isinstance(output, text):
+        if not isinstance(output, str):
             Log.error("expecting unicode json")
 
     def test_double1(self):
@@ -197,7 +193,7 @@ class TestPyPyJSON(FuzzyTestCase):
         self.assertEqual(value2json(test), '{"hello":" world"}')
 
     def test_json_is_unicode(self):
-        self.assertIsInstance(value2json({}), text)
+        self.assertIsInstance(value2json({}), str)
 
     def test_json_encode_slash(self):
         self.assertEqual(value2json("/"), '"/"')
