@@ -32,68 +32,76 @@ class TypedObject(OrderedDict):
     """
     LAZY BOX FOR TYPED OBJECTS
     """
-    __slots__ = ["_boxed_value"]
+    __slots__ = ["_attachments", "_boxed_value"]
 
     def __init__(self, value):
+        self._attachments = {}
         self._boxed_value = value
 
     def __getitem__(self, item):
+        if item in self._attachments:
+            return self._attachments[item]
         if item == NUMBER_KEY:
             if isinstance(self._boxed_value, (int, float)):
                 return self._boxed_value
             return None
-        elif item == ARRAY_KEY:
+        if item == ARRAY_KEY:
             if is_many(self._boxed_value):
                 return [TypedObject(v) for v in self._boxed_value]
             return None
-        elif IS_PRIMITIVE_KEY.match(item):
+        if IS_PRIMITIVE_KEY.match(item):
             expected = python_type_to_jx_type_key.get(type(self._boxed_value))
             if item == expected:
                 return self._boxed_value
             return None
-        elif item == EXISTS_KEY:
+        if item == EXISTS_KEY:
             if is_many(self._boxed_value):
                 return len(self._boxed_value)
             elif exists(self._boxed_value):
                 return 1
             return 0
-        elif is_missing(self._boxed_value):
+        if is_missing(self._boxed_value):
             return None
         else:
             try:
                 return TypedObject(self._boxed_value[item])
-            except KeyError:
+            except Exception:
                 pass
             try:
                 return TypedObject(getattr(self._boxed_value, item))
-            except KeyError:
+            except Exception:
                 pass
             return None
 
+    def __setitem__(self, key, value):
+        if isinstance(value, TypedObject):
+            value = value._boxed_value
+        self._attachments[key] = value
+
     def keys(self):
         if is_missing(self._boxed_value):
-            return set()
+            return self._attachments.keys()
         if is_data(self._boxed_value):
-            return self._boxed_value.keys()
+            return self._boxed_value.keys() | self._attachments.keys()
         type_key = python_type_to_jx_type_key.get(type(self._boxed_value))
-        return set(type_key)
+        return {type_key} | self._attachments.keys()
 
     def items(self):
         value = self._boxed_value
         if is_missing(value):
-            return []
+            return self._attachments.items()
         if is_data(value):
-            return [(k, TypedObject(v)) for k, v in value.items()]
+            return [*((k, TypedObject(v)) for k, v in value.items()), *((k, TypedObject(v)) for k, v in self._attachments.items())]
         if is_many(value):
-            return [(ARRAY_KEY, [TypedObject(v) for v in value])]
+            return [(ARRAY_KEY, [TypedObject(v) for v in value]), *((k, TypedObject(v)) for k, v in self._attachments.items())]
         type_key = python_type_to_jx_type_key.get(type(value))
-        return [(type_key, value)]
+        return [(type_key, value), *((k, TypedObject(v)) for k, v in self._attachments.items())]
 
     def __str__(self):
-        return str(self._boxed_value)
+        return f"{self._boxed_value} ({self._attachments})"
 
     def __repr__(self):
-        return repr(self._boxed_value)
+        return f"{self._boxed_value} ({self._attachments})"
 
 
 register_data(TypedObject)
