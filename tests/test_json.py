@@ -43,26 +43,22 @@ class TestJSON(unittest.TestCase):
             )
         })
         assert (
-                output
-                == '{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
+            output
+            == '{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
         )
 
         if not isinstance(output, text):
             Log.error("expecting unicode json")
 
     def test_unicode2(self):
-        output = value2json({
-            "comment": "testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"
-        })
+        output = value2json({"comment": "testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"})
 
         assert output == '{"comment":"testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"}'
         if not isinstance(output, text):
             Log.error("expecting unicode json")
 
     def test_unicode3(self):
-        output = value2json({
-            "comment": "testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"
-        })
+        output = value2json({"comment": "testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"})
         assert output == '{"comment":"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"}'
         if not isinstance(output, text):
             Log.error("expecting unicode json")
@@ -71,9 +67,7 @@ class TestJSON(unittest.TestCase):
         test = {"value": 5.2025595183536973e-07}
         output = value2json(test)
         self.assertIn(
-            output,
-            ['{"value":5.202559518353697e-7}', '{"value":5.202559518353697e-07}'],
-            "expecting correct value",
+            output, ['{"value":5.202559518353697e-7}', '{"value":5.202559518353697e-07}'], "expecting correct value",
         )
 
     def test_double2(self):
@@ -147,8 +141,7 @@ class TestJSON(unittest.TestCase):
         test = value2json({"values": [i for i in range(1000)]})
         test = test[:1000] + "|" + test[1000:]
         expected = (
-            "Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222,"
-            " 22...\n\t                       ^\n"
+            "Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222, 22...\n\t                       ^\n"
         )
         # expected = u'Can not decode JSON at:\n\t...9,270,271,272,273,27|4,275,276,277,278,2...\n\t                       ^\n'
         try:
@@ -221,10 +214,7 @@ class TestJSON(unittest.TestCase):
         self.assertEqual(test, expecting, "expecting proper indentation")
 
     def test_pretty_indent2(self):
-        j = wrap({"a": {
-            "b1": {"c": {"d": 1, "e": 2, "f": 3}},
-            "b2": {"c": {"d": 1, "e": 2, "f": 3}},
-        }})
+        j = wrap({"a": {"b1": {"c": {"d": 1, "e": 2, "f": 3}}, "b2": {"c": {"d": 1, "e": 2, "f": 3}},}})
         test = pretty_json(j)
         expecting = (
             '{"a": {\n    "b1": {"c": {\n        "d": 1,\n        "e": 2,\n        "f":'
@@ -315,12 +305,8 @@ class TestJSON(unittest.TestCase):
         self.assertEqual(result, '"B"')
 
     def test_hjson(self):
-        result = json2value(
-            "http.headers.referer: http://example.com", flexible=True, leaves=True
-        )
-        self.assertEqual(
-            result, {"http": {"headers": {"referer": "http://example.com"}}}
-        )
+        result = json2value("http.headers.referer: http://example.com", flexible=True, leaves=True)
+        self.assertEqual(result, {"http": {"headers": {"referer": "http://example.com"}}})
 
     def test_tuple(self):
         result = value2json((1, "int"), pretty=True)
