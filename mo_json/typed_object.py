@@ -10,6 +10,7 @@ from collections import OrderedDict
 
 from mo_dots import is_many, is_data, exists, is_missing
 from mo_dots.datas import register_data
+from mo_logs import logger
 
 from mo_json import python_type_to_jx_type_key, IS_PRIMITIVE_KEY, ARRAY_KEY, EXISTS_KEY, NUMBER_KEY
 
@@ -34,9 +35,17 @@ class TypedObject(OrderedDict):
     """
     __slots__ = ["_attachments", "_boxed_value"]
 
-    def __init__(self, value):
-        self._attachments = {}
+    def __init__(self, value, **attachments):
+        self._attachments = attachments
+        if isinstance(value, TypedObject):
+            logger.error("expecting plain object")
         self._boxed_value = value
+
+    def __iter__(self):
+        if is_many(self._boxed_value):
+            yield from self._boxed_value
+        else:
+            yield self._boxed_value
 
     def __getitem__(self, item):
         if item in self._attachments:
@@ -47,8 +56,12 @@ class TypedObject(OrderedDict):
             return None
         if item == ARRAY_KEY:
             if is_many(self._boxed_value):
-                return [TypedObject(v) for v in self._boxed_value]
+                return [entype(v) for v in self._boxed_value]
             return None
+        try:
+            IS_PRIMITIVE_KEY.match(item)
+        except Exception:
+            logger.error("expecting primitive key not {item}", item=item.__class__.__name__)
         if IS_PRIMITIVE_KEY.match(item):
             expected = python_type_to_jx_type_key.get(type(self._boxed_value))
             if item == expected:
@@ -64,11 +77,11 @@ class TypedObject(OrderedDict):
             return None
         else:
             try:
-                return TypedObject(self._boxed_value[item])
+                return entype(self._boxed_value[item])
             except Exception:
                 pass
             try:
-                return TypedObject(getattr(self._boxed_value, item))
+                return entype(getattr(self._boxed_value, item))
             except Exception:
                 pass
             return None
