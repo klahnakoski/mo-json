@@ -116,12 +116,7 @@ def detype(value):
 
 
 def _detype_list(value):
-    if any(is_data(v) for v in value):
-        # MAY BE MORE TYPED OBJECTS IN THIS LIST
-        return [_detype_value(v) for v in value]
-    else:
-        # LIST OF PRIMITIVE VALUES
-        return value
+    return [_detype_value(v) for v in value]
 
 
 def _detype_dict(value):

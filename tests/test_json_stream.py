@@ -19,37 +19,28 @@ class TestJsonStream(FuzzyTestCase):
     def test_select_from_list(self):
         json = slow_stream('{"1":[{"a":"b"}]}')
         result = list(stream.parse(json, "1", ["1.a"]))
-        expected = [{"1":{"a": "b"}}]
+        expected = [{"1": {"a": "b"}}]
         self.assertEqual(result, expected)
 
     def test_select_nothing_from_many_list(self):
         json = slow_stream('{"1":[{"a":"b"}, {"a":"c"}]}')
 
         result = list(stream.parse(json, "1"))
-        expected = [
-            {},
-            {}
-        ]
+        expected = [{}, {}]
         self.assertEqual(result, expected)
 
     def test_select_from_many_list(self):
         json = slow_stream('{"1":[{"a":"b"}, {"a":"c"}]}')
 
         result = list(stream.parse(json, "1", ["1.a"]))
-        expected = [
-            {"1": {"a": "b"}},
-            {"1": {"a": "c"}}
-        ]
+        expected = [{"1": {"a": "b"}}, {"1": {"a": "c"}}]
         self.assertEqual(result, expected)
 
     def test_select_from_diverse_list(self):
         json = slow_stream('{"1":["test", {"a":"c"}]}')
 
         result = list(stream.parse(json, "1", ["1.a"]))
-        expected = [
-            {"1": {}},
-            {"1": {"a": "c"}}
-        ]
+        expected = [{"1": {}}, {"1": {"a": "c"}}]
         self.assertEqual(result[0]["1"], None)
         self.assertEqual(result, expected)
 
@@ -58,10 +49,7 @@ class TestJsonStream(FuzzyTestCase):
         json = slow_stream('{"1":{"2":[{"a":"b"}, {"a":"c"}]}}')
 
         result = list(stream.parse(json, "1.2", ["1.2.a"]))
-        expected = [
-            {"1": {"2": {"a": "b"}}},
-            {"1": {"2": {"a": "c"}}}
-        ]
+        expected = [{"1": {"2": {"a": "b"}}}, {"1": {"2": {"a": "c"}}}]
         self.assertEqual(result, expected)
 
     def test_post_properties_error(self):
@@ -69,26 +57,21 @@ class TestJsonStream(FuzzyTestCase):
 
         def test():
             result = list(stream.parse(json, "1", ["0", "1.a", "2"]))
+
         self.assertRaises(Exception, test)
 
     def test_select_objects(self):
         json = slow_stream('{"b":[{"a":1, "p":{"b":2, "c":{"d":3}}}, {"a":4, "p":{"b":5, "c":{"d":6}}}]}')
 
         result = list(stream.parse(json, "b", ["b.a", "b.p.c"]))
-        expected = [
-            {"b": {"a": 1, "p": {"c": {"d": 3}}}},
-            {"b": {"a": 4, "p": {"c": {"d": 6}}}}
-        ]
+        expected = [{"b": {"a": 1, "p": {"c": {"d": 3}}}}, {"b": {"a": 4, "p": {"c": {"d": 6}}}}]
         self.assertEqual(result, expected)
 
     def test_select_all(self):
         json = slow_stream('{"b":[{"a":1, "p":{"b":2, "c":{"d":3}}}, {"a":4, "p":{"b":5, "c":{"d":6}}}]}')
 
         result = list(stream.parse(json, "b", ["b"]))
-        expected = [
-            {"b": {"a": 1, "p": {"b": 2, "c": {"d": 3}}}},
-            {"b": {"a": 4, "p": {"b": 5, "c": {"d": 6}}}}
-        ]
+        expected = [{"b": {"a": 1, "p": {"b": 2, "c": {"d": 3}}}}, {"b": {"a": 4, "p": {"b": 5, "c": {"d": 6}}}}]
         self.assertEqual(result, expected)
 
     def test_big_baddy(self):
@@ -158,13 +141,11 @@ class TestJsonStream(FuzzyTestCase):
             "endtime": 1444699317,
             "reason": "The Nightly scheduler named 'mozilla-inbound periodic' triggered this build",
             "properties": {
-                "request_times": {
-                    "83875568": 1444681804
-                },
+                "request_times": {"83875568": 1444681804},
                 "slavename": "b-2008-ix-0099",
                 "log_url": "http://ftp.mozilla.org/pub/mozilla.org/firefox/tinderbox-builds/mozilla-inbound-win64-pgo/1444681804/mozilla-inbound-win64-pgo-bm84-build1-build460.txt.gz",
-                "buildername": "WINNT 6.1 x86-64 mozilla-inbound pgo-build"
-            }
+                "buildername": "WINNT 6.1 x86-64 mozilla-inbound pgo-build",
+            },
         }}]
 
         result = list(stream.parse(
@@ -178,8 +159,8 @@ class TestJsonStream(FuzzyTestCase):
                 "builds.properties.request_times",
                 "builds.properties.slavename",
                 "builds.properties.log_url",
-                "builds.properties.buildername"
-            ]
+                "builds.properties.buildername",
+            ],
         ))
         self.assertEqual(result, expected)
 
@@ -194,41 +175,25 @@ class TestJsonStream(FuzzyTestCase):
     def test_object_items(self):
         json = slow_stream('{"a": 1, "b": 2, "c": 3}')
         result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
-        expected = [
-            {"name": "a", "value": 1},
-            {"name": "b", "value": 2},
-            {"name": "c", "value": 3}
-        ]
+        expected = [{"name": "a", "value": 1}, {"name": "b", "value": 2}, {"name": "c", "value": 3}]
         self.assertEqual(result, expected)
 
     def test_nested_primitives(self):
         json = slow_stream('{"u": "a", "t": [1, 2, 3]}')
         result = list(stream.parse(json, "t", expected_vars={"t", "u"}))
-        expected = [
-            {"u": "a", "t": 1},
-            {"u": "a", "t": 2},
-            {"u": "a", "t": 3}
-        ]
+        expected = [{"u": "a", "t": 1}, {"u": "a", "t": 2}, {"u": "a", "t": 3}]
         self.assertEqual(result, expected)
 
     def test_select_no_items(self):
         json = slow_stream('{"a": 1, "b": 2, "c": 3}')
         result = list(stream.parse(json, {"items": "."}, expected_vars={}))
-        expected = [
-            {},
-            {},
-            {}
-        ]
+        expected = [{}, {}, {}]
         self.assertEqual(result, expected)
 
     def test_array_object_items(self):
         json = slow_stream('[{"a": 1}, {"b": 2}, {"c": 3}]')
         result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
-        expected = [
-            {"name": "a", "value": 1},
-            {"name": "b", "value": 2},
-            {"name": "c", "value": 3}
-        ]
+        expected = [{"name": "a", "value": 1}, {"name": "b", "value": 2}, {"name": "c", "value": 3}]
         self.assertEqual(result, expected)
 
     def test_nested_items(self):
@@ -237,36 +202,26 @@ class TestJsonStream(FuzzyTestCase):
         expected = [
             {"u": "a", "t": {"name": "a", "value": 1}},
             {"u": "a", "t": {"name": "b", "value": 2}},
-            {"u": "a", "t": {"name": "c", "value": 3}}
+            {"u": "a", "t": {"name": "c", "value": 3}},
         ]
         self.assertEqual(result, expected)
 
     def test_empty(self):
         json = slow_stream('{"u": "a", "t": []}')
         result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
-        expected = [
-            {"u": "a", "t": Null}
-        ]
+        expected = [{"u": "a", "t": Null}]
         self.assertEqual(result, expected)
 
     def test_miss_item_in_list(self):
         json = slow_stream('{"u": "a", "t": ["k", null, "m"]}')
         result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
-        expected = [
-            {"u": "a", "t": "k"},
-            {"u": "a", "t": Null},
-            {"u": "a", "t": "m"}
-        ]
+        expected = [{"u": "a", "t": "k"}, {"u": "a", "t": Null}, {"u": "a", "t": "m"}]
         self.assertEqual(result, expected)
 
     def test_ignore_elements_of_list(self):
         json = slow_stream('{"u": "a", "t": ["k", null, "m"]}')
         result = list(stream.parse(json, "t", expected_vars={"u"}))
-        expected = [
-            {"u": "a"},
-            {"u": "a"},
-            {"u": "a"}
-        ]
+        expected = [{"u": "a"}, {"u": "a"}, {"u": "a"}]
         self.assertEqual(result, expected)
 
     def test_bad_item_in_list(self):
@@ -274,33 +229,28 @@ class TestJsonStream(FuzzyTestCase):
 
         def output():
             list(stream.parse(json, "t", expected_vars={"u", "t"}))
+
         self.assertRaises(Exception, output)
 
     def test_object_instead_of_list(self):
         json = slow_stream('{"u": "a", "t": "k"}')
 
         result = list(stream.parse(json, "t", expected_vars={"u", "t"}))
-        expected = [
-            {"u": "a", "t": "k"}
-        ]
+        expected = [{"u": "a", "t": "k"}]
         self.assertEqual(result, expected)
 
     def test_simple(self):
         json = slow_stream('{"u": "a"}')
 
         result = list(stream.parse(json, ".", expected_vars={"."}))
-        expected = [
-            {"u": "a"}
-        ]
+        expected = [{"u": "a"}]
         self.assertEqual(result, expected)
 
     def test_missing_array(self):
         json = slow_stream('{"u": "a"}')
 
         result = list(stream.parse(json, "t", expected_vars={"u"}))
-        expected = [
-            {"u": "a"}
-        ]
+        expected = [{"u": "a"}]
         self.assertEqual(result, expected)
 
     def test_not_used_array(self):
@@ -313,8 +263,10 @@ class TestJsonStream(FuzzyTestCase):
 
     def test_nested_items_w_error(self):
         json = slow_stream('{"u": "a", "t": [{"a": 1}, {"b": 2}, {"c": 3}], "v":3}')
+
         def test():
             result = list(stream.parse(json, {"items": "t"}, expected_vars={"u", "t.name", "v"}))
+
         self.assertRaises(Exception, test)
 
     def test_values_are_arrays(self):
@@ -322,12 +274,13 @@ class TestJsonStream(FuzzyTestCase):
         result = list(stream.parse(json, {"items": "."}, expected_vars={"name", "value"}))
         expected = [
             {"name": "AUTHORS", "value": ["mozilla.org", "Licensing"]},
-            {"name": "CLOBBER", "value": ["Core", "Build Config"]}
+            {"name": "CLOBBER", "value": ["Core", "Build Config"]},
         ]
         self.assertEqual(result, expected)
 
     def test_line_delimited_objects(self):
-        json = slow_stream("""
+        json = slow_stream(
+            """
             {
                 "key11": "value11",
                 "key12": "value12"
@@ -336,18 +289,10 @@ class TestJsonStream(FuzzyTestCase):
                 "key21": "value21",
                 "key22": "value22"
             }
-        """)
+        """
+        )
         result = list(stream.parse_concatenated(json, ".", expected_vars={"."}))
-        expected = [
-            {
-                "key11": "value11",
-                "key12": "value12",
-            },
-            {
-                "key21": "value21",
-                "key22": "value22",
-            }
-        ]
+        expected = [{"key11": "value11", "key12": "value12",}, {"key21": "value21", "key22": "value22",}]
         self.assertEqual(result, expected)
 
 
@@ -356,6 +301,8 @@ def slow_stream(bytes):
         bytes = bytes.encode("utf8")
 
     r = BytesIO(bytes).read
+
     def output():
         return r(1)
+
     return output
