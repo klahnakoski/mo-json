@@ -9,13 +9,14 @@
         "Programming Language :: Python :: 3.9",
         "Topic :: Software Development :: Libraries",
         "Topic :: Software Development :: Libraries :: Python Modules",
-        "Programming Language :: Python :: 3.10"
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11"
     ],
     "description": "More JSON Tools! ",
     "extras_require": {"tests": ["mo-testing", "mo-threads"]},
     "install_requires": [
-                         "hjson",   "mo-dots==9.417.23168", "mo-future==7.416.23168",
-          "mo-logs==8.425.23207",  "mo-times==5.425.23207"
+                         "hjson",   "mo-dots==9.430.23234", "mo-future==7.428.23214",
+          "mo-logs==8.434.23241",  "mo-times==5.434.23241"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -343,5 +344,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.425.23207"
+    "version": "6.434.23241"
 }
