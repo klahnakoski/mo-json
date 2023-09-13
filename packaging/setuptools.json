@@ -16,7 +16,7 @@
     "extras_require": {"tests": ["mo-testing", "mo-threads"]},
     "install_requires": [
                          "hjson",   "mo-dots==9.430.23234", "mo-future==7.428.23214",
-          "mo-logs==8.434.23241",  "mo-times==5.434.23241"
+          "mo-logs==8.438.23256",  "mo-times==5.438.23256"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -344,5 +344,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.434.23241"
+    "version": "6.438.23256"
 }
