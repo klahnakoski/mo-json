@@ -359,7 +359,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
         logger.error("only unicode json accepted")
 
     try:
-        if params:
+        if len(params):
             # LOOKUP REFERENCES
             json_string = _simple_expand(json_string, (params, ))
 
