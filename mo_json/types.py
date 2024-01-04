@@ -95,6 +95,8 @@ class JxType(object):
                     yield concat_field(k, p), t
 
     def __contains__(self, item):
+        if self is JX_ANY:
+            return True
         if isinstance(item, str):
             return item in self.__dict__
         if not isinstance(item, JxType):
