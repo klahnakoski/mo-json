@@ -13,7 +13,7 @@ from math import isnan
 
 from mo_dots import split_field, NullType, is_many, is_data, concat_field, is_sequence
 from mo_future import text, none_type, items, first, POS_INF
-from mo_logs import Log
+from mo_logs import logger
 from mo_times import Date
 
 
@@ -29,6 +29,8 @@ def to_jx_type(value):
 class JxType(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
+            if k=="..":
+                logger.error("not allowed")
             setattr(self, k, v)
 
     def __or__(self, other):
@@ -69,7 +71,7 @@ class JxType(object):
                 dirty = True
                 continue
 
-            Log.error("Not expected")
+            logger.error("Not expected")
 
         if not dirty:
             return self
@@ -149,7 +151,7 @@ class JxType(object):
             sd = base_type(sd)
             od = base_type(od)
 
-            Log.error("not expected", cause)
+            logger.error("not expected", cause)
 
     def __radd__(self, path):
         """
@@ -212,7 +214,7 @@ def base_type(type_):
 
 def union_type(*types):
     if len(types) == 1 and is_many(types[0]):
-        Log.error("expecting many parameters")
+        logger.error("expecting many parameters")
     output = JX_IS_NULL
 
     for t in types:
