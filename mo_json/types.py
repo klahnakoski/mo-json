@@ -29,7 +29,7 @@ def to_jx_type(value):
 class JxType(object):
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
-            if k=="..":
+            if k == "..":
                 logger.error("not allowed")
             setattr(self, k, v)
 
@@ -265,7 +265,17 @@ PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
 INTERNAL = (EXISTS, OBJECT, ARRAY)
 STRUCT = (OBJECT, ARRAY)
 
-BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~e~", "~j~"
+BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = (
+    "~b~",
+    "~i~",
+    "~n~",
+    "~t~",
+    "~d~",
+    "~s~",
+    "~a~",
+    "~e~",
+    "~j~",
+)
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
 

@@ -16,7 +16,8 @@ from mo_dots import (
     SLOT,
     to_data,
     leaves_to_data,
-    null_types, is_list,
+    null_types,
+    is_list,
 )
 from mo_dots.objects import DataObject
 from mo_future import (
@@ -361,7 +362,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
     try:
         if len(params):
             # LOOKUP REFERENCES
-            json_string = _simple_expand(json_string, (params, ))
+            json_string = _simple_expand(json_string, (params,))
 
         if flexible:
             value = hjson2value(json_string)
@@ -492,7 +493,6 @@ def _simple_expand(template, seq):
     return _variable_pattern.sub(replacer, template)
 
 
-
 def get_if_type(value, json_type):
     """
     RETURN value IF IT IS THE CORRECT TYPE, OTHERWISE None
@@ -521,9 +521,6 @@ def is_json_type(value, json_type):
     elif isinstance(value, (int, float, Date)) and json_type == "number":
         return True
     return False
-
-
-
 
 
 from mo_json.decoder import json_decoder

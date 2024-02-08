@@ -49,9 +49,9 @@ NESTED = (
         "key3": "value",
         "key4": None,
         "key5": SIMPLE[0].copy(),
-        "key6": ["test", u"test2", 99],
+        "key6": [b"test", "test2", 99],
         "key7": {1, 2.5, 3, 4},
-        u"key": u"\u0105\u0107\u017c",
+        "key": "\u0105\u0107\u017c",
     },
     25000,
 )
@@ -75,7 +75,7 @@ def test_json(results, description, method, n):
                 if case == "HUGE":
                     example = "<too big to show>"
             except Exception as e:
-                Log.warning(u"json encoding failure", cause=e)
+                Log.warning("json encoding failure", cause=e)
                 example = "<CRASH>"
 
             t0 = time.time()
@@ -98,12 +98,12 @@ def test_json(results, description, method, n):
                 "result": example,
             }
             Log.note(
-                u"using {{interpreter}}: {{description}} {{type}} x {{num}} x {{count}} = {{time}} result={{result}}",
+                "using {{interpreter}}: {{description}} {{type}} x {{num}} x {{count}} = {{time}} result={{result}}",
                 **summary
             )
             results.append(summary)
         except Exception as e:
-            Log.warning(u"problem with encoding: {{message}}", {"message": e.message}, e)
+            Log.warning("problem with encoding: {{message}}", {"message": e.message}, e)
 
 
 class EnhancedJSONEncoder(json.JSONEncoder):
@@ -139,7 +139,7 @@ def main(num):
 
         # test_json(results, "scrubbed ujson", ujson.dumps, num)  # THIS PLAIN CRASHES
 
-        Log.note(u"\n{{summary}}", summary=list2tab(results))
+        Log.note("\n{{summary}}", summary=list2tab(results))
     finally:
         Log.stop()
 

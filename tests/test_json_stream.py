@@ -166,10 +166,10 @@ class TestJsonStream(FuzzyTestCase):
 
     def test_constants(self):
         #                    01234567890123456789012345678901234567890123456789012345678901234567890123456789
-        json = slow_stream(u'[true, false, null, 42, 3.14, "hello world", "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"]')
+        json = slow_stream('[true, false, null, 42, 3.14, "hello world", "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"]')
 
         result = list(stream.parse(json, None, ["."]))
-        expected = [True, False, None, 42, 3.14, u"hello world", u"àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"]
+        expected = [True, False, None, 42, 3.14, "hello world", "àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"]
         self.assertEqual(result, expected)
 
     def test_object_items(self):
