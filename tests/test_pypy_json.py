@@ -50,7 +50,7 @@ class TestPyPyJSON(FuzzyTestCase):
         })
         assert (
             output
-            == u'{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
+            == '{"comment":"Open all links in the current tab, except the pages opened from external apps â€” open these ones in new windows"}'
         )
 
         if not isinstance(output, str):
@@ -59,52 +59,52 @@ class TestPyPyJSON(FuzzyTestCase):
     def test_unicode2(self):
         output = value2json({"comment": "testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"})
 
-        assert output == u'{"comment":"testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"}'
+        assert output == '{"comment":"testing accented char àáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ"}'
         if not isinstance(output, str):
             Log.error("expecting text json")
 
     def test_unicode3(self):
         output = value2json({"comment": "testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"})
-        assert output == u'{"comment":"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"}'
+        assert output == '{"comment":"testing accented char ŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙"}'
         if not isinstance(output, str):
             Log.error("expecting unicode json")
 
     def test_double1(self):
         test = {"value": 5.2025595183536973e-07}
         output = value2json(test)
-        if output != u'{"value":5.202559518353697e-7}':
+        if output != '{"value":5.202559518353697e-7}':
             Log.error("expecting correct value")
 
     def test_double2(self):
         test = {"value": 52}
         output = value2json(test)
-        if output != u'{"value":52}':
+        if output != '{"value":52}':
             Log.error("expecting correct value")
 
     def test_double3(self):
         test = {"value": 0.52}
         output = value2json(test)
-        if output != u'{"value":0.52}':
+        if output != '{"value":0.52}':
             Log.error("expecting correct value")
 
     def test_double4(self):
         v = 1.99999999999
         test = {"value": v}
         output = value2json(test)
-        if output != u'{"value":2}':
+        if output != '{"value":2}':
             Log.error("expecting correct value")
 
     def test_double5(self):
         v = 1.00000000001
         test = {"value": v}
         output = value2json(test)
-        if output != u'{"value":1}':
+        if output != '{"value":1}':
             Log.error("expecting correct value")
 
     def test_generator(self):
         test = {"value": (x for x in [])}
         output = value2json(test)
-        if output != u'{"value":[]}':
+        if output != '{"value":[]}':
             Log.error("expecting correct value")
 
     def test_bad_key(self):
@@ -117,7 +117,7 @@ class TestPyPyJSON(FuzzyTestCase):
         expected = (
             "Can not decode JSON at:\n\t..., 216, 217, 218, 219|, 220, 221, 222, 22...\n\t                       ^\n"
         )
-        # expected = u'Can not decode JSON at:\n\t...9,270,271,272,273,27|4,275,276,277,278,2...\n\t                       ^\n'
+        # expected = 'Can not decode JSON at:\n\t...9,270,271,272,273,27|4,275,276,277,278,2...\n\t                       ^\n'
         with self.assertRaises("Can not decode JSON"):
             json2value(test)
 
@@ -138,38 +138,38 @@ class TestPyPyJSON(FuzzyTestCase):
         test = {"add": Data(start="".join([" ", "â€"]))}
         output = value2json(test)
 
-        expecting = u'{"add":{"start":" â€"}}'
+        expecting = '{"add":{"start":" â€"}}'
         self.assertEqual(expecting, output, "expecting correct json")
 
     def test_false(self):
         test = value2json(wrap({"value": False}))
-        expecting = u'{"value":false}'
+        expecting = '{"value":false}'
         self.assertEqual(test, expecting, "expecting False to serialize as 'false'")
 
     def test_empty_dict(self):
         test = value2json(wrap({"match_all": wrap({})}))
-        expecting = u'{"match_all":{}}'
+        expecting = '{"match_all":{}}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_empty_list1(self):
         test = value2json(wrap({"a": []}))
-        expecting = u'{"a":[]}'
+        expecting = '{"a":[]}'
         self.assertEqual(test, expecting, "expecting empty list to serialize")
 
     def test_empty_list2(self):
         test = value2json(wrap({"a": [], "b": 1}))
-        expecting = u'{"a":[],"b":1}'
+        expecting = '{"a":[],"b":1}'
         self.assertEqual(test, expecting, "expecting empty list to serialize")
 
     def test_deep_empty_dict(self):
         test = value2json(wrap({"query": {"match_all": {}}, "size": 20000}))
-        expecting = u'{"query":{"match_all":{}},"size":20000}'
+        expecting = '{"query":{"match_all":{}},"size":20000}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_pretty_json(self):
         j = wrap({"not": {"match_all": wrap({})}})
         test = pretty_json(j)
-        expecting = u'{"not": {"match_all": {}}}'
+        expecting = '{"not": {"match_all": {}}}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_Date(self):
