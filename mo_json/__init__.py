@@ -85,14 +85,14 @@ def float2json(value):
         digits, more_digits = _snap_to_base_10(mantissa)
         int_exp = int(str_exp) + more_digits
         if int_exp > 15:
-            return sign + digits[0] + "." + (digits[1:].rstrip("0") or "0") + "e" + text(int_exp)
+            return sign + digits[0] + "." + (digits[1:].rstrip("0") or "0") + "e" + str(int_exp)
         elif int_exp >= 0:
             return sign + (digits[: 1 + int_exp] + "." + digits[1 + int_exp :].rstrip("0")).rstrip(".")
         elif -4 < int_exp:
             digits = ("0" * (-int_exp)) + digits
             return sign + (digits[:1] + "." + digits[1:].rstrip("0")).rstrip(".")
         else:
-            return sign + digits[0] + "." + (digits[1:].rstrip("0") or "0") + "e" + text(int_exp)
+            return sign + digits[0] + "." + (digits[1:].rstrip("0") or "0") + "e" + str(int_exp)
     except Exception as e:
         logger.error("not expected", e)
 
@@ -106,7 +106,7 @@ def _snap_to_base_10(mantissa):
         if f9 == 0:
             return "1000000000000000", 1
         elif f9 < f0:
-            digits = text(int(digits[:f9]) + 1) + ("0" * (16 - f9))
+            digits = str(int(digits[:f9]) + 1) + ("0" * (16 - f9))
         else:
             digits = digits[:f0] + ("0" * (16 - f0))
     return digits, 0
@@ -245,7 +245,7 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
             output.append(v)
         return output
     elif hasattr(value, "__call__"):
-        return text(repr(value))
+        return str(repr(value))
     elif is_number(value):
         # for numpy values
         return scrub_number(value)
@@ -278,7 +278,7 @@ def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
             return json
         except Exception:
             pass
-        logger.error("Can not encode into JSON: {{value}}", value=text(repr(obj)), cause=e)
+        logger.error("Can not encode into JSON: {{value}}", value=str(repr(obj)), cause=e)
 
 
 def remove_line_comment(line):
@@ -355,7 +355,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
     :param leaves: ASSUME JSON KEYS ARE DOT-DELIMITED
     :return: Python value
     """
-    json_string = text(json_string)
+    json_string = str(json_string)
     if not is_text(json_string) and json_string.__class__.__name__ != "FileString":
         logger.error("only unicode json accepted")
 
@@ -367,7 +367,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
         if flexible:
             value = hjson2value(json_string)
         else:
-            value = to_data(json_decoder(text(json_string)))
+            value = to_data(json_decoder(str(json_string)))
 
         if leaves:
             value = leaves_to_data(value)
