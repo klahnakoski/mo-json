@@ -92,6 +92,8 @@ class JxType(object):
     def leaves(self):
         if self in JX_PRIMITIVE:
             yield ".", self
+        elif self is JX_ANY:
+            logger.error("must be better defined")
         else:
             for k, v in self.__dict__.items():
                 for p, t in v.leaves():
