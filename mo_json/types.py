@@ -213,7 +213,6 @@ def base_type(type_):
         try:
             d = t.__dict__
         except Exception as cause:
-            print("hi")
             raise cause
         ld = len(d)
     return type_
