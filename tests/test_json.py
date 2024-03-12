@@ -318,6 +318,10 @@ class TestJSON(unittest.TestCase):
         expected = {"a": 1, "b": 2}
         self.assertEqual(result, expected)
 
+    def test_bytes(self):
+        data = 'this平和'
+        result = value2json(data.encode('utf8'))
+        self.assertEqual(result, '"this\\\\xe5\\\\xb9\\\\xb3\\\\xe5\\\\x92\\\\x8c"')
 
 if __name__ == "__main__":
     try:
