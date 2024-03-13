@@ -161,7 +161,7 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
 
     if type_ in null_types:
         return None
-    elif type_ is text:
+    elif type_ is str:
         return scrub_text(value)
     elif type_ is float:
         if math.isnan(value) or math.isinf(value):
@@ -179,10 +179,8 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
         return scrub_number(value.unix)
     elif type_ is Duration:
         return scrub_number(value.seconds)
-    elif type_ is str:
-        return value.decode("utf8")
     elif type_ is bytes:
-        return ''.join(f"\\x{char:02x}" if not 32 <= char <= 126 else chr(char) for char in value)
+        return value.decode('latin1')
     elif type_ is Decimal:
         return scrub_number(value)
     elif type_ is Data:
