@@ -19,10 +19,11 @@ This set of modules provides the following benefits:
 
 * **Version 6.x.x** - Typed encoder no longer encodes to typed multivalues, rather, encodes to array of typed values.  For example, instead of 
 
-      {"a":{"~n~":[1, 2]}}
+      {"a": {"~n~": [1, 2]}}
+
   we get 
       
-      {"a":[{"~n~":1},{"~n~":2}]} 
+      {"a": {"~a~": [{"~n~": 1},{"~n~": 2}]}} 
 
 ## Usage
 
@@ -240,13 +241,13 @@ Some JSON is a single large object, rather than an array of objects. In these ca
         "b": 2,
         "c": [1, 2]
     }
-    parse(json, {"items":"."}, {"name", "value"})   
+    parse(json, {"items": "."}, {"name", "value"})   
 
 produces an iterator of
 
-    {"name": "a", "value":"test"} 
-    {"name": "b", "value":2} 
-    {"name": "c", "value":[1,2]} 
+    {"name": "a", "value": "test"} 
+    {"name": "b", "value": 2} 
+    {"name": "c", "value": [1,2]} 
 
 ----------------------
 
@@ -277,7 +278,7 @@ There are three main conversions:
 ```    
     {"a": [1, 2, 3]} -> {"a": {
         "~e~": 3, 
-        "~N~":[
+        "~a~": [
             {"~n~": 1},
             {"~n~": 2},
             {"~n~": 3}
