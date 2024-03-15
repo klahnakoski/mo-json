@@ -19,10 +19,11 @@ This set of modules provides the following benefits:
 
 * **Version 6.x.x** - Typed encoder no longer encodes to typed multivalues, rather, encodes to array of typed values.  For example, instead of 
 
-      {"a":{"~n~":[1, 2]}}
+      {"a": {"~n~": [1, 2]}}
+
   we get 
       
-      {"a":[{"~n~":1},{"~n~":2}]} 
+      {"a": {"~a~": [{"~n~": 1},{"~n~": 2}]}} 
 
 ## Usage
 
@@ -240,20 +241,20 @@ Some JSON is a single large object, rather than an array of objects. In these ca
         "b": 2,
         "c": [1, 2]
     }
-    parse(json, {"items":"."}, {"name", "value"})   
+    parse(json, {"items": "."}, {"name", "value"})   
 
 produces an iterator of
 
-    {"name": "a", "value":"test"} 
-    {"name": "b", "value":2} 
-    {"name": "c", "value":[1,2]} 
+    {"name": "a", "value": "test"} 
+    {"name": "b", "value": 2} 
+    {"name": "c", "value": [1,2]} 
 
 ----------------------
 
 ### Module `typed_encoder`
 
 
-One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots; who, in their self righteous delusion, believe explicit types are better. They make the lives of humans worse; as we are forced to toil over endless schema modifications.
+One reason that NoSQL documents stores are wonderful is their schema can automatically expand to accept new properties. Unfortunately, this flexibility is not limitless; A string assigned to property prevents an object being assigned to the same, or visa-versa. This flexibility is under attack by the strict-typing zealots; who, in their self-righteous delusion, believe explicit types are better. They make the lives of humans worse; as we are forced to toil over endless schema modifications.
 
 This module translates JSON documents into "typed" form; which allows document containers to store both objects and primitives in the same property. This also enables the storage of values with no containing object! 
 
@@ -264,27 +265,27 @@ The typed JSON has a different form than the original, and queries into the docu
 There are three main conversions:
 
 1. Primitive values are replaced with single-property objects, where the property name indicates the data type of the value stored:
-```
-    {"a": true} -> {"a": {"~b~": true}} 
-    {"a": 1   } -> {"a": {"~n~": 1   }} 
-    {"a": "1" } -> {"a": {"~s~": "1" }}
-```
+   ```
+   {"a": true} -> {"a": {"~b~": true}} 
+   {"a": 1   } -> {"a": {"~n~": 1   }} 
+   {"a": "1" } -> {"a": {"~s~": "1" }}
+   ```
 2. JSON objects get an additional property, `~e~`, to mark existence. This allows us to query for object existence, and to count the number of objects.
-```    
-    {"a": {}} -> {"a": {}, "~e~": 1}  
-```
+   ```    
+   {"a": {}} -> {"a": {"~e~": 1}, "~e~": 1}  
+   ```
 3. JSON arrays are contained in a new object, along with `~e~` to count the number of elements in the array:
-```    
-    {"a": [1, 2, 3]} -> {"a": {
-        "~e~": 3, 
-        "~N~":[
-            {"~n~": 1},
-            {"~n~": 2},
-            {"~n~": 3}
-        ]
-    }}
-```
-Please notice the sum of `a.~e~` works for both objects and arrays; letting us interpret sub-objects as single-value nested object arrays. 
+   ```    
+   {"a": [1, 2, 3]} -> {"a": {
+       "~e~": 3, 
+       "~a~": [
+           {"~n~": 1},
+           {"~n~": 2},
+           {"~n~": 3}
+       ]
+   }}
+   ```
+   Note the sum of `a.~e~` works for both objects and arrays; letting us interpret sub-objects as single-value nested object arrays. 
 
 ### Function `typed_encode()`
 
@@ -294,13 +295,6 @@ Accepts a `dict`, `list`, or primitive value, and generates the typed JSON that 
 
 Converts an existing JSON unicode string and returns the typed JSON unicode string for the same.
 
-
-----------------------
-
-
-### Module `mo_json.encode`
-
-### Function: `mo_json.encode.json_encoder()`
 
 ----------------------
 
