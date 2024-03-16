@@ -11,7 +11,7 @@ import datetime
 import unittest
 
 import mo_json
-from mo_dots import Data, wrap
+from mo_dots import Data, wrap, DataObject
 from mo_future import text
 from mo_json import json2value, value2json
 from mo_json.encoder import pretty_json, cPythonJSONEncoder, pypy_json_encode
@@ -322,6 +322,26 @@ class TestJSON(unittest.TestCase):
         data = 'this平和'
         result = value2json(data.encode('utf8'))
         self.assertEqual(result, '"thiså¹³å\x92\x8c"')
+
+    def test_object_of_date(self):
+        obj = DataObject(Date("2024-03-15"))
+        result = value2json(obj)
+        self.assertEqual(result, '1710460800')
+
+    def test_object_of_unknown(self):
+
+        class Unknown:
+            parent = None
+
+            __slots__ = ["a"]
+            def __init__(self, a):
+                self.a = a
+
+        Unknown.parent = Unknown(4)
+
+        obj = DataObject(Unknown(3))
+        result = value2json(obj)
+        self.assertEqual(result, '{"a":3}')
 
 if __name__ == "__main__":
     try:

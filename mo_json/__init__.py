@@ -17,7 +17,7 @@ from mo_dots import (
     to_data,
     leaves_to_data,
     null_types,
-    is_list,
+    is_list, from_data, exists,
 )
 from mo_dots.objects import DataObject
 from mo_future import (
@@ -28,7 +28,7 @@ from mo_future import (
 from mo_imports import delay_import
 from mo_logs import Except, strings
 from mo_logs.strings import toString, FORMATTERS
-from mo_times import Duration
+from mo_times import Duration, Timer
 
 from mo_json.types import *
 
@@ -152,13 +152,17 @@ def scrub(value, scrub_text=_keep_whitespace, scrub_number=_scrub_number):
 
 
 def _scrub(value, is_done, stack, scrub_text, scrub_number):
+    while isinstance(value, DataObject):
+        value = from_data(value)
+
     if FIND_LOOPS:
         _id = id(value)
         if _id in stack and type(_id).__name__ not in ["int"]:
             logger.error("loop in JSON")
         stack = stack + [_id]
-    type_ = value.__class__
 
+    # PRIMITIVE VALUES
+    type_ = value.__class__
     if type_ in null_types:
         return None
     elif type_ is str:
@@ -174,7 +178,7 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
     elif type_ in (date, datetime):
         return scrub_number(datetime2unix(value))
     elif type_ is timedelta:
-        return value.total_seconds()
+        return scrub_number(value.total_seconds())
     elif type_ is Date:
         return scrub_number(value.unix)
     elif type_ is Duration:
@@ -183,35 +187,18 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
         return value.decode('latin1')
     elif type_ is Decimal:
         return scrub_number(value)
-    elif type_ is Data:
-        return _scrub(_get(value, SLOT), is_done, stack, scrub_text, scrub_number)
+    elif is_number(value):
+        # for numpy values
+        return scrub_number(value)
     elif is_data(value):
-        _id = id(value)
-        if _id in is_done:
-            # logger.warning("possible loop in structure detected")
-            return '"<LOOP IN STRUCTURE>"'
-        is_done.add(_id)
-        try:
-            output = {}
-            for k, v in value.items():
-                if is_text(k):
-                    pass
-                elif is_binary(k):
-                    k = k.decode("utf8")
-                else:
-                    logger.error("keys must be strings")
-                v = _scrub(v, is_done, stack, scrub_text, scrub_number)
-                if v != None or is_data(v):
-                    output[k] = v
-        finally:
-            is_done.discard(_id)
-        return output
-    elif type_ in (tuple, list, FlatList):
-        output = []
-        for v in value:
+        output = {}
+        for k, v in value.items():
+            if not isinstance(k, str):
+                logger.error("keys must be strings")
             v = _scrub(v, is_done, stack, scrub_text, scrub_number)
-            output.append(v)
-        return output  # if output else None
+            if isinstance(v, list) or exists(v):
+                output[k] = v
+        return output
     elif type_ is type:
         return value.__name__
     elif type_.__name__ == "bool_":  # DEAR ME!  Numpy has it's own booleans (value==False could be used, but 0==False in Python.  DOH!)
@@ -219,8 +206,16 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
             return False
         else:
             return True
-    elif not isinstance(value, Except) and isinstance(value, Exception):
-        return _scrub(Except.wrap(value), is_done, stack, scrub_text, scrub_number)
+    elif is_many(value):
+        output = []
+        for v in value:
+            v = _scrub(v, is_done, stack, scrub_text, scrub_number)
+            output.append(v)
+        return output  # if output else None
+    elif hasattr(value, "co_code") or hasattr(value, "f_locals"):
+        return None
+    elif hasattr(value, "__call__"):
+        return str(repr(value))
     elif hasattr(value, "__json__"):
         try:
             j = value.__json__()
@@ -236,22 +231,18 @@ def _scrub(value, is_done, stack, scrub_text, scrub_number):
             return _scrub(value.__data__(), is_done, stack, scrub_text, scrub_number)
         except Exception as cause:
             logger.error("problem with calling __data__()", cause)
-    elif hasattr(value, "co_code") or hasattr(value, "f_locals"):
-        return None
-    elif hasattr(value, "__iter__"):
-        output = []
-        for v in value:
-            v = _scrub(v, is_done, stack, scrub_text, scrub_number)
-            output.append(v)
-        return output
-    elif hasattr(value, "__call__"):
-        return str(repr(value))
-    elif is_number(value):
-        # for numpy values
-        return scrub_number(value)
+    elif isinstance(value, Exception):
+        return _scrub(Except.wrap(value), is_done, stack, scrub_text, scrub_number)
     else:
-        return _scrub(DataObject(value), is_done, stack, scrub_text, scrub_number)
-
+        # FINALLY, WRAP IN OBJECT AND ATTEMPT TO SERIALIZE
+        output = {}
+        for k, v in DataObject(value).items():
+            if not isinstance(k, str):
+                logger.error("keys must be strings")
+            v = _scrub(v, is_done, stack, scrub_text, scrub_number)
+            if exists(v):
+                output[k] = v
+        return output
 
 def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
     """
@@ -261,7 +252,7 @@ def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
     :param keep_whitespace: False TO strip() THE WHITESPACE IN THE VALUES
     :return:
     """
-    if FIND_LOOPS:
+    with Timer("scrub", too_long=0.1):
         obj = scrub(obj, scrub_text=_keep_whitespace if keep_whitespace else trim_whitespace)
     try:
         json = json_encoder(obj, pretty=pretty)

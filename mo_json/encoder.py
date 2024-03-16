@@ -117,11 +117,9 @@ class cPythonJSONEncoder(object):
             return pretty_json(value)
 
         try:
-            with Timer("scrub", too_long=0.1):
-                scrubbed = scrub(value)
             param = {"size": 0}
             with Timer("encode {{size}} characters", param=param, too_long=0.1):
-                output = str(self.encoder(scrubbed))
+                output = str(self.encoder(value))
                 param["size"] = len(output)
                 return output
         except Exception as cause:
