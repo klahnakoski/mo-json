@@ -10,6 +10,8 @@
 import datetime
 import unittest
 
+import pytz
+
 import mo_json
 from mo_dots import Data, wrap, DataObject
 from mo_future import text
@@ -342,6 +344,13 @@ class TestJSON(unittest.TestCase):
         obj = DataObject(Unknown(3))
         result = value2json(obj)
         self.assertEqual(result, '{"a":3}')
+
+    def test_zoned_to_utc(self):
+        ny_tz = pytz.timezone('America/New_York')
+        ny_time = datetime.datetime.now(ny_tz)
+        result = value2json({"time": ny_time})
+        self.assertEqual(result, f'{{"time":{ny_time.timestamp()}}}')
+
 
 if __name__ == "__main__":
     try:
