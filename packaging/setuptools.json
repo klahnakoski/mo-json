@@ -13,10 +13,10 @@
         "Programming Language :: Python :: 3.12"
     ],
     "description": "More JSON Tools! ",
-    "extras_require": {"tests": ["mo-testing>=7.562.24075", "mo-threads>=6.562.24075"]},
+    "extras_require": {"tests": ["mo-testing", "mo-threads", "pytz"]},
     "install_requires": [
-                         "hjson",   "mo-dots==9.570.24076", "mo-future==7.546.24057",
-          "mo-logs==8.570.24076",  "mo-times==5.570.24076"
+                         "hjson",   "mo-dots==9.574.24078", "mo-future==7.546.24057",
+          "mo-logs==8.574.24078",  "mo-times==5.574.24078"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -338,5 +338,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.571.24077"
+    "version": "6.574.24078"
 }
