@@ -13,7 +13,7 @@
         "Programming Language :: Python :: 3.12"
     ],
     "description": "More JSON Tools! ",
-    "extras_require": {"tests": ["mo-testing", "mo-threads", "pytz"]},
+    "extras_require": {"tests": ["mo-testing>=7.562.24075", "mo-threads>=6.562.24075", "pytz>=2024.1"]},
     "install_requires": [
                          "hjson",   "mo-dots==9.574.24078", "mo-future==7.546.24057",
           "mo-logs==8.574.24078",  "mo-times==5.574.24078"
@@ -338,5 +338,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.574.24078"
+    "version": "6.576.24080"
 }
