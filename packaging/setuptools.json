@@ -18,8 +18,8 @@
          "beautifulsoup4>=4.12.3"
     ]},
     "install_requires": [
-                         "hjson",   "mo-dots==9.578.24081", "mo-future==7.546.24057",
-          "mo-logs==8.579.24081",  "mo-times==5.579.24081"
+                         "hjson",   "mo-dots==9.582.24095", "mo-future==7.546.24057",
+          "mo-logs==8.582.24095",  "mo-times==5.582.24095"
     ],
     "license": "MPL 2.0",
     "long_description": {
@@ -341,5 +341,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.579.24081"
+    "version": "6.582.24095"
 }
