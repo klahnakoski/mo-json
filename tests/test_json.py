@@ -357,6 +357,11 @@ class TestJSON(unittest.TestCase):
         json = value2json(soup.find("p").string)
         self.assertEqual(json, '"A"')
 
+    def test_pretty_int(self):
+        a = Data()
+        a['.']=30
+        json = value2json(a)
+        self.assertEqual(json, "30")
 
 
 if __name__ == "__main__":

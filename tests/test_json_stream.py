@@ -12,9 +12,10 @@ from io import BytesIO
 from mo_dots import Null
 from mo_future import text
 from mo_json import stream
-from mo_testing.fuzzytestcase import FuzzyTestCase
+from mo_testing.fuzzytestcase import FuzzyTestCase, add_error_reporting
 
 
+@add_error_reporting
 class TestJsonStream(FuzzyTestCase):
     def test_select_from_list(self):
         json = slow_stream('{"1":[{"a":"b"}]}')
