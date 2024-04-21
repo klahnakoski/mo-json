@@ -14,7 +14,7 @@
     ],
     "description": "More JSON Tools! ",
     "extras_require": {"tests": [
-        "mo-testing>=7.562.24075", "mo-threads>=6.562.24075",            "pytz>=2024.1",
+        "mo-testing>=7.587.24110", "mo-threads>=6.585.24095",            "pytz>=2024.1",
          "beautifulsoup4>=4.12.3"
     ]},
     "install_requires": [
@@ -341,5 +341,5 @@
     "name": "mo-json",
     "packages": ["mo_json"],
     "url": "https://github.com/klahnakoski/mo-json",
-    "version": "6.589.24111"
+    "version": "6.590.24112"
 }
