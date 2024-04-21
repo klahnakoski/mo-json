@@ -321,10 +321,15 @@ class TestJSON(unittest.TestCase):
         expected = {"a": 1, "b": 2}
         self.assertEqual(result, expected)
 
-    def test_bytes(self):
+    def test_bytes1(self):
         data = 'this平和'
         result = value2json(data.encode('utf8'))
         self.assertEqual(result, '"thiså¹³å\x92\x8c"')
+
+    def test_bytes2(self):
+        data = chr(0)
+        result = value2json(data.encode('utf8'))
+        self.assertEqual(result, '""')
 
     def test_object_of_date(self):
         obj = DataObject(Date("2024-03-15"))
