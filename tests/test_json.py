@@ -368,6 +368,10 @@ class TestJSON(unittest.TestCase):
         json = value2json(a)
         self.assertEqual(json, "30")
 
+    def test_timedelta(self):
+        data = datetime.timedelta(days=1)
+        json = value2json(data)
+        self.assertEqual(json, '86400')
 
 if __name__ == "__main__":
     try:
