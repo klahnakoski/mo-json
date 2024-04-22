@@ -1,5 +1,5 @@
 mo-future
-mo-dots
-mo-logs
+mo-dots==9.584.24095
+mo-logs==8.584.24095
 mo-times
 hjson
