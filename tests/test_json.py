@@ -14,7 +14,7 @@ import pytz
 
 from bs4 import BeautifulSoup
 import mo_json
-from mo_dots import Data, wrap, DataObject
+from mo_dots import Data, DataObject, to_data
 from mo_future import text
 from mo_json import json2value, value2json
 from mo_json.encoder import pretty_json, cPythonJSONEncoder, pypy_json_encode
@@ -180,44 +180,44 @@ class TestJSON(unittest.TestCase):
         self.assertEqual(expecting, output, "expecting correct json")
 
     def test_false(self):
-        test = value2json(wrap({"value": False}))
+        test = value2json(to_data({"value": False}))
         expecting = '{"value":false}'
         self.assertEqual(test, expecting, "expecting False to serialize as 'false'")
 
     def test_empty_dict(self):
-        test = value2json(wrap({"match_all": wrap({})}))
+        test = value2json(to_data({"match_all": to_data({})}))
         expecting = '{"match_all":{}}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_empty_list1(self):
-        test = value2json(wrap({"a": []}))
+        test = value2json(to_data({"a": []}))
         expecting = '{"a":[]}'
         self.assertEqual(test, expecting, "expecting empty list to serialize")
 
     def test_empty_list2(self):
-        test = value2json(wrap({"a": [], "b": 1}))
+        test = value2json(to_data({"a": [], "b": 1}))
         expecting = '{"a":[],"b":1}'
         self.assertEqual(test, expecting, "expecting empty list to serialize")
 
     def test_deep_empty_dict(self):
-        test = value2json(wrap({"query": {"match_all": {}}, "size": 20000}))
+        test = value2json(to_data({"query": {"match_all": {}}, "size": 20000}))
         expecting = '{"query":{"match_all":{}},"size":20000}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_pretty_json(self):
-        j = wrap({"not": {"match_all": wrap({})}})
+        j = to_data({"not": {"match_all": to_data({})}})
         test = pretty_json(j)
         expecting = '{"not": {"match_all": {}}}'
         self.assertEqual(test, expecting, "expecting empty dict to serialize")
 
     def test_pretty_indent1(self):
-        j = wrap({"a": {"b": {"c": {"d": 1, "e": 2, "f": 3}}}})
+        j = to_data({"a": {"b": {"c": {"d": 1, "e": 2, "f": 3}}}})
         test = pretty_json(j)
         expecting = '{"a": {"b": {"c": {\n    "d": 1,\n    "e": 2,\n    "f": 3\n}}}}'
         self.assertEqual(test, expecting, "expecting proper indentation")
 
     def test_pretty_indent2(self):
-        j = wrap({"a": {"b1": {"c": {"d": 1, "e": 2, "f": 3}}, "b2": {"c": {"d": 1, "e": 2, "f": 3}},}})
+        j = to_data({"a": {"b1": {"c": {"d": 1, "e": 2, "f": 3}}, "b2": {"c": {"d": 1, "e": 2, "f": 3}},}})
         test = pretty_json(j)
         expecting = (
             '{"a": {\n    "b1": {"c": {\n        "d": 1,\n        "e": 2,\n        "f":'
@@ -329,7 +329,7 @@ class TestJSON(unittest.TestCase):
     def test_bytes2(self):
         data = chr(0)
         result = value2json(data.encode('utf8'))
-        self.assertEqual(result, '""')
+        self.assertEqual(result, '"\\u0000"')
 
     def test_object_of_date(self):
         obj = DataObject(Date("2024-03-15"))
