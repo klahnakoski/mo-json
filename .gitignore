@@ -7,8 +7,5 @@
 .idea
 .svn
 *.iml
-
 /setup.py
-
-
 /MANIFEST.in
