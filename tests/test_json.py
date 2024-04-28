@@ -16,7 +16,7 @@ from bs4 import BeautifulSoup
 import mo_json
 from mo_dots import Data, DataObject, to_data
 from mo_future import text
-from mo_json import json2value, value2json
+from mo_json import json2value, value2json, float2json
 from mo_json.encoder import pretty_json, cPythonJSONEncoder, pypy_json_encode
 from mo_logs import Log
 from mo_times.dates import Date
@@ -88,7 +88,7 @@ class TestJSON(unittest.TestCase):
     def test_double_clean1a(self):
         test = {"value": 0.0000999927520752}
         output = pypy_json_encode(test)
-        self.assertEqual(output, '{"value":1.0e-4}')
+        self.assertEqual(output, '{"value":1e-4}')
 
     def test_double_clean1b(self):
         test = {"value": 0.000999927520752}
@@ -372,6 +372,27 @@ class TestJSON(unittest.TestCase):
         data = datetime.timedelta(days=1)
         json = value2json(data)
         self.assertEqual(json, '86400')
+
+    def test_float2json(self):
+        result = float2json(0.1)
+        self.assertEqual(result, '0.1')
+        result = float2json(None)
+        self.assertEqual(result, 'null')
+        result = float2json(float('nan'))
+        self.assertEqual(result, 'null')
+        result = float2json(float('inf'))
+        self.assertEqual(result, 'null')
+        result = float2json(float('-inf'))
+        self.assertEqual(result, 'null')
+        result = float2json(1.0)
+        self.assertEqual(result, '1')
+        result = float2json(1.1)
+        self.assertEqual(result, '1.1')
+        result = float2json(1.0e-10)
+        self.assertEqual(result, '1e-10')
+        result = float2json(1e-4)
+        self.assertEqual(result, '1e-4')
+
 
 if __name__ == "__main__":
     try:
