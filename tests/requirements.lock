@@ -7,10 +7,10 @@ mo-dots==10.615.24125
 mo-future==7.584.24095
 mo-imports==7.584.24095
 mo-kwargs==7.615.24125
-mo-logs==8.617.24125
+mo-logs==8.618.24125
 mo-math==7.616.24125
 mo-testing==8.610.24119
 mo-threads==6.610.24119
-mo-times==5.617.24125
+mo-times==5.619.24125
 pytz==2024.1
 soupsieve==2.5
