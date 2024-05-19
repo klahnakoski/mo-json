@@ -393,6 +393,9 @@ class TestJSON(unittest.TestCase):
         result = float2json(1e-4)
         self.assertEqual(result, '1e-4')
 
+    def test_flexible_json(self):
+        result = json2value('{"a": 1, "b": 2}', flexible=True)
+        self.assertIsInstance(result, Data)
 
 if __name__ == "__main__":
     try:
