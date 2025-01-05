@@ -2,9 +2,9 @@
 
 
 [![PyPI Latest Release](https://img.shields.io/pypi/v/mo-json.svg)](https://pypi.org/project/mo-json/)
- [![Build Status](https://github.com/klahnakoski/mo-json/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/klahnakoski/mo-json/actions/workflows/build.yml)
- [![Coverage Status](https://coveralls.io/repos/github/klahnakoski/mo-json/badge.svg?branch=dev)](https://coveralls.io/github/klahnakoski/mo-json?branch=dev)
-[![Downloads](https://pepy.tech/badge/mo-json)](https://pepy.tech/project/mo-json)
+[![Build Status](https://github.com/klahnakoski/mo-json/actions/workflows/build.yml/badge.svg?branch=master)](https://github.com/klahnakoski/mo-json/actions/workflows/build.yml)
+[![Coverage Status](https://coveralls.io/repos/github/klahnakoski/mo-json/badge.svg?branch=dev)](https://coveralls.io/github/klahnakoski/mo-json?branch=dev)
+[![Downloads](https://static.pepy.tech/badge/mo-json)](https://pepy.tech/project/mo-json)
 
 
 This set of modules provides the following benefits:
@@ -93,7 +93,7 @@ Notice the lack of quotes in the JSON (hjson) and the deep structure created by 
 
     pip install -r tests/requirements.txt
     set PYTHONPATH=.    
-    python.exe -m unittest discover tests
+    python.exe -m unittest discover .
 
 
 ## Module Details
