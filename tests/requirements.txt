@@ -1,4 +1,4 @@
-mo-testing>=8.648.24172
+mo-testing>=8.665.25029
 mo-threads>=6.660.25006
-pytz>=2024.2
+pytz>=2025.1
 beautifulsoup4>=4.12.3
