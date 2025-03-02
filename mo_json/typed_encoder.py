@@ -9,7 +9,6 @@
 #
 from datetime import date, datetime, timedelta
 from decimal import Decimal
-from json.encoder import ESCAPE_DCT
 
 from mo_dots import (
     CLASS,
@@ -36,6 +35,15 @@ from mo_logs import Log
 from mo_logs.strings import quote
 from mo_times import Date, Duration
 
+from mo_json.encoder import (
+    COLON,
+    COMMA,
+    UnicodeBuilder,
+    json_encoder,
+    problem_serializing,
+)
+from mo_json.scrubber import datetime2unix
+from mo_json.typed_object import TypedObject
 from mo_json.types import (
     BOOLEAN,
     EXISTS,
@@ -46,15 +54,6 @@ from mo_json.types import (
     python_type_to_jx_type,
     python_type_to_jx_type_key,
 )
-from mo_json.encoder import (
-    COLON,
-    COMMA,
-    UnicodeBuilder,
-    json_encoder,
-    problem_serializing,
-)
-from mo_json.scrubber import datetime2unix
-from mo_json.typed_object import TypedObject
 from mo_json.types import (
     BOOLEAN_KEY,
     NUMBER_KEY,
@@ -270,25 +269,16 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 net_new_properties.append(path + [STRING_KEY])
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
-            append(buffer, '"')
-            try:
-                v = value.decode("utf8")
-            except Exception as e:
-                raise problem_serializing(value, e)
-
-            for c in v:
-                append(buffer, ESCAPE_DCT.get(c, c))
-            append(buffer, '"}')
+            append(buffer, quote(value.decode("utf8")))
+            append(buffer, '}')
         elif _type is text:
             if STRING_KEY not in sub_schema:
                 sub_schema[STRING_KEY] = True
                 net_new_properties.append(path + [STRING_KEY])
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
-            append(buffer, '"')
-            for c in value:
-                append(buffer, ESCAPE_DCT.get(c, c))
-            append(buffer, '"}')
+            append(buffer, quote(value))
+            append(buffer, '}')
         elif _type in integer_types:
             if NUMBER_KEY not in sub_schema:
                 sub_schema[NUMBER_KEY] = True

@@ -1,11 +1,11 @@
+import math
 import re
 
-from mo_dots import is_missing, is_finite
+from mo_dots import is_missing
 from mo_logs import strings, logger
+from mo_math import INFINITY
 
 SNAP_TO_BASE_10 = False  # Identify floats near a round base10 value (has 000 or 999) and shorten
-
-
 
 
 ESCAPE_DCT = {
@@ -68,7 +68,6 @@ def float2json(value):
         logger.error("not expected", e)
 
 
-
 def _snap_to_base_10(mantissa):
     # TODO: https://lists.nongnu.org/archive/html/gcl-devel/2012-10/pdfkieTlklRzN.pdf
     digits = mantissa.replace(".", "")
@@ -83,3 +82,15 @@ def _snap_to_base_10(mantissa):
             digits = digits[:f0] + ("0" * (16 - f0))
     return digits, 0
 
+
+INFINITY = float("+inf")
+
+
+def is_finite(s):
+    try:
+        f = float(s)
+        if math.isnan(f) or abs(f) == INFINITY:
+            return False
+        return True
+    except Exception:
+        return False
