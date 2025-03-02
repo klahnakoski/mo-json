@@ -20,7 +20,7 @@ from mo_dots import (
     _get,
     join_field,
     split_field,
-    concat_field,
+    concat_field, is_missing,
 )
 from mo_future import (
     binary_type,
@@ -32,16 +32,9 @@ from mo_future import (
     text,
 )
 from mo_logs import Log
-from mo_logs.strings import quote
 from mo_times import Date, Duration
 
-from mo_json.encoder import (
-    COLON,
-    COMMA,
-    UnicodeBuilder,
-    json_encoder,
-    problem_serializing,
-)
+from mo_json.encoder import COLON, COMMA, UnicodeBuilder, json_encoder
 from mo_json.scrubber import datetime2unix
 from mo_json.typed_object import TypedObject
 from mo_json.types import (
@@ -63,6 +56,7 @@ from mo_json.types import (
     EXISTS_KEY,
     IS_TYPE_KEY,
 )
+from mo_json.utils import quote, float2json
 
 
 def encode_property(name):
@@ -270,7 +264,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
             append(buffer, quote(value.decode("utf8")))
-            append(buffer, '}')
+            append(buffer, "}")
         elif _type is text:
             if STRING_KEY not in sub_schema:
                 sub_schema[STRING_KEY] = True
@@ -278,7 +272,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
             append(buffer, quote(value))
-            append(buffer, '}')
+            append(buffer, "}")
         elif _type in integer_types:
             if NUMBER_KEY not in sub_schema:
                 sub_schema[NUMBER_KEY] = True

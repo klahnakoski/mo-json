@@ -8,7 +8,6 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 import json
-import math
 import time
 from datetime import date, datetime, timedelta
 from decimal import Decimal
@@ -28,13 +27,12 @@ from mo_future import (
     StringIO,
 )
 from mo_logs import Except
-from mo_logs.strings import quote
 from mo_times import Timer
 from mo_times.dates import Date
 from mo_times.durations import Duration
 
 from mo_json.scrubber import Scrubber
-from mo_json.utils import float2json
+from mo_json.utils import float2json, quote
 
 json_decoder = json.JSONDecoder().decode
 _get = object.__getattribute__
@@ -164,10 +162,7 @@ def _value2json(value, _buffer):
         elif type in (int, long, Decimal):
             append(_buffer, str(value))
         elif type is float:
-            if math.isnan(value) or math.isinf(value):
-                append(_buffer, "null")
-            else:
-                append(_buffer, float2json(value))
+            append(_buffer, float2json(value))
         elif type in (set, list, tuple, FlatList):
             _list2json(value, _buffer)
         elif type is date:
@@ -234,7 +229,7 @@ def _iter2json(value, _buffer):
 
 def _dict2json(value, _buffer):
     try:
-        prefix = '{"'
+        prefix = '{'
         for k, v in value.items():
             append(_buffer, prefix)
             prefix = COMMA

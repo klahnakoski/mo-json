@@ -1,11 +1,11 @@
 import math
 import re
 
+import mo_json
 from mo_dots import is_missing
 from mo_logs import strings, logger
 from mo_math import INFINITY
 
-SNAP_TO_BASE_10 = False  # Identify floats near a round base10 value (has 000 or 999) and shorten
 
 
 ESCAPE_DCT = {
@@ -71,7 +71,7 @@ def float2json(value):
 def _snap_to_base_10(mantissa):
     # TODO: https://lists.nongnu.org/archive/html/gcl-devel/2012-10/pdfkieTlklRzN.pdf
     digits = mantissa.replace(".", "")
-    if SNAP_TO_BASE_10:
+    if mo_json.SNAP_TO_BASE_10:
         f9 = strings.find(digits, "999")
         f0 = strings.find(digits, "000")
         if f9 == 0:
