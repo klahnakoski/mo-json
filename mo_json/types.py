@@ -11,7 +11,16 @@ from datetime import datetime, date
 from decimal import Decimal
 from math import isnan
 
-from mo_dots import Data, split_field, NullType, is_many, is_data, concat_field, is_sequence, FlatList
+from mo_dots import (
+    Data,
+    split_field,
+    NullType,
+    is_many,
+    is_data,
+    concat_field,
+    is_sequence,
+    FlatList
+)
 from mo_times import Date
 
 from mo_future import text, none_type, items, first, POS_INF
@@ -27,7 +36,7 @@ def to_jx_type(value):
         return JX_ANY
 
 
-class JxType(object):
+class JxType:
     def __init__(self, **kwargs):
         for k, v in kwargs.items():
             if k == "..":
@@ -271,7 +280,17 @@ PRIMITIVE = (EXISTS, BOOLEAN, INTEGER, NUMBER, TIME, INTERVAL, STRING)
 INTERNAL = (EXISTS, OBJECT, ARRAY)
 STRUCT = (OBJECT, ARRAY)
 
-BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY = "~b~", "~i~", "~n~", "~t~", "~d~", "~s~", "~a~", "~e~", "~j~"
+(BOOLEAN_KEY, INTEGER_KEY, NUMBER_KEY, TIME_KEY, DURATION_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, JSON_KEY,) = (
+    "~b~",
+    "~i~",
+    "~n~",
+    "~t~",
+    "~d~",
+    "~s~",
+    "~a~",
+    "~e~",
+    "~j~"
+)
 IS_PRIMITIVE_KEY = re.compile(r"^~[bintds]~$")
 IS_TYPE_KEY = re.compile(r"^~[bintdsaje]~$")
 
@@ -362,9 +381,9 @@ for k, v in items(_python_type_to_jx_type):
 
 def value_to_jx_type(value):
     if is_many(value):
-        return _primitive(ARRAY_KEY, union_type(*(value_to_json_type(v) for v in value)))
+        return _primitive(ARRAY_KEY, union_type(*(value_to_jx_type(v) for v in value)))
     elif is_data(value):
-        return JxType(**{k: value_to_json_type(v) for k, v in value.items()})
+        return JxType(**{k: value_to_jx_type(v) for k, v in value.items()})
     else:
         return _python_type_to_jx_type[value.__class__]
 
@@ -420,6 +439,7 @@ _jx_type_to_json_type = {
 def jx_type_to_json_type(jx_type):
     basic_type = base_type(jx_type)
     return _jx_type_to_json_type.get(basic_type, OBJECT)
+
 
 _python_type_to_jx_type = {
     int: JX_INTEGER,

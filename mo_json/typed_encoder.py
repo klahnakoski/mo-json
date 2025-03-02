@@ -20,7 +20,7 @@ from mo_dots import (
     _get,
     join_field,
     split_field,
-    concat_field,
+    concat_field, is_missing,
 )
 from mo_future import (
     binary_type,
@@ -32,32 +32,31 @@ from mo_future import (
     text,
 )
 from mo_logs import Log
-from mo_logs.strings import quote
 from mo_times import Date, Duration
 
-from mo_json import (
+from mo_json.encoder import COLON, COMMA, UnicodeBuilder, json_encoder
+from mo_json.scrubber import datetime2unix
+from mo_json.typed_object import TypedObject
+from mo_json.types import (
     BOOLEAN,
-    ESCAPE_DCT,
     EXISTS,
     INTEGER,
     ARRAY,
     NUMBER,
     STRING,
-    float2json,
     python_type_to_jx_type,
-    quote,
     python_type_to_jx_type_key,
 )
-from mo_json.encoder import (
-    COLON,
-    COMMA,
-    UnicodeBuilder,
-    json_encoder,
-    problem_serializing,
+from mo_json.types import (
+    BOOLEAN_KEY,
+    NUMBER_KEY,
+    INTEGER_KEY,
+    STRING_KEY,
+    ARRAY_KEY,
+    EXISTS_KEY,
+    IS_TYPE_KEY,
 )
-from mo_json.scrubber import datetime2unix
-from mo_json.typed_object import TypedObject
-from mo_json.types import BOOLEAN_KEY, NUMBER_KEY, INTEGER_KEY, STRING_KEY, ARRAY_KEY, EXISTS_KEY, IS_TYPE_KEY
+from mo_json.utils import quote, float2json
 
 
 def encode_property(name):
@@ -69,6 +68,10 @@ def decode_property(encoded):
 
 
 def untype_path(encoded):
+    """
+    :param encoded:
+    :return: RETURN THE UNTYPED PATH, REMOVE LAST TYPE TOO
+    """
     if encoded.startswith(".."):
         remainder = encoded.lstrip(".")
         back = len(encoded) - len(remainder) - 1
@@ -79,11 +82,11 @@ def untype_path(encoded):
         return join_field(decode_property(c) for c in split_field(encoded) if not IS_TYPE_KEY.match(c))
 
 
-def untype_path(encoded):
+def unnest_path(encoded):
     """
 
     :param encoded:
-    :return:
+    :return: RETURN THE UNTYPED PATH, KEEP LAST TYPE
     """
     if encoded.startswith(".."):
         remainder = encoded.lstrip(".")
@@ -91,9 +94,10 @@ def untype_path(encoded):
         return ("." * back) + untype_path(remainder)
 
     path = split_field(encoded)
-    return join_field(
-        [decode_property(c) for c in path[:-1] if not IS_TYPE_KEY.match(c)] + [decode_property(path[-1])]
-    )
+    return join_field([
+        *(decode_property(c) for c in path[:-1] if not IS_TYPE_KEY.match(c)),
+        decode_property(path[-1]),
+    ])
 
 
 def get_nested_path(typed_path):
@@ -217,7 +221,7 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
             if sub_schema.__class__.__name__ == "Column":
                 from mo_logs import Log
 
-                Log.error("Can not handle {{column|json}}", column=sub_schema)
+                Log.error("Can not handle {column|json}", column=sub_schema)
 
             if ARRAY_KEY in sub_schema:
                 # PREFER NESTED, WHEN SEEN BEFORE
@@ -259,25 +263,16 @@ def typed_encode(value, sub_schema, path, net_new_properties, buffer):
                 net_new_properties.append(path + [STRING_KEY])
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
-            append(buffer, '"')
-            try:
-                v = value.decode("utf8")
-            except Exception as e:
-                raise problem_serializing(value, e)
-
-            for c in v:
-                append(buffer, ESCAPE_DCT.get(c, c))
-            append(buffer, '"}')
+            append(buffer, quote(value.decode("utf8")))
+            append(buffer, "}")
         elif _type is text:
             if STRING_KEY not in sub_schema:
                 sub_schema[STRING_KEY] = True
                 net_new_properties.append(path + [STRING_KEY])
             append(buffer, "{")
             append(buffer, QUOTED_STRING_KEY)
-            append(buffer, '"')
-            for c in value:
-                append(buffer, ESCAPE_DCT.get(c, c))
-            append(buffer, '"}')
+            append(buffer, quote(value))
+            append(buffer, "}")
         elif _type in integer_types:
             if NUMBER_KEY not in sub_schema:
                 sub_schema[NUMBER_KEY] = True
