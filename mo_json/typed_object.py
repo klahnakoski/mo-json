@@ -12,7 +12,7 @@ from mo_dots import is_many, is_data, exists, is_missing
 from mo_dots.datas import register_data
 from mo_logs import logger
 
-from mo_json import python_type_to_jx_type_key, IS_PRIMITIVE_KEY, ARRAY_KEY, EXISTS_KEY, NUMBER_KEY
+from mo_json.types import ARRAY_KEY, NUMBER_KEY, IS_PRIMITIVE_KEY, python_type_to_jx_type_key, EXISTS_KEY
 
 
 def entype(value):
@@ -96,6 +96,8 @@ class TypedObject(OrderedDict):
         if is_missing(self._boxed_value):
             return self._attachments.keys()
         if is_data(self._boxed_value):
+
+            return set( python_type_to_jx_type_key  for k in self._boxed_value.keys())
             return self._boxed_value.keys() | self._attachments.keys()
         type_key = python_type_to_jx_type_key.get(type(self._boxed_value))
         return {type_key} | self._attachments.keys()
@@ -115,7 +117,10 @@ class TypedObject(OrderedDict):
                 *((k, TypedObject(v)) for k, v in self._attachments.items()),
             ]
         type_key = python_type_to_jx_type_key.get(type(value))
-        return [(type_key, value), *((k, TypedObject(v)) for k, v in self._attachments.items())]
+        return [
+            (type_key, value),
+            *((k, TypedObject(v)) for k, v in self._attachments.items()),
+        ]
 
     def __str__(self):
         return f"{self._boxed_value} ({self._attachments})"

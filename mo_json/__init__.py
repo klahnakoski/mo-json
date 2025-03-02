@@ -8,108 +8,60 @@
 # Contact: Kyle Lahnakoski (kyle@lahnakoski.com)
 #
 
-from mo_dots import (
-    Null,
-    to_data,
-    leaves_to_data,
-    is_list, is_missing
-)
+from mo_dots import Null, to_data, leaves_to_data, is_list
 from mo_imports import delay_import
-from mo_math import is_number, is_finite
-
-from mo_json.scrubber import Scrubber, _keep_whitespace, trim_whitespace
-from mo_json.types import *
-from mo_logs import Except, strings
+from mo_logs import Except
 from mo_logs.strings import toString, FORMATTERS
 from mo_times import Timer
+
+from mo_json.scrubber import Scrubber, _keep_whitespace, trim_whitespace
+from mo_json.typed_encoder import detype
+from mo_json.typed_object import entype
+from mo_json.types import *
+from mo_json.utils import *
+
+__all__ = [
+    "ARRAY",
+    "ARRAY_KEY",
+    "BOOLEAN",
+    "EXISTS",
+    "INTERVAL",
+    "IS_NULL",
+    "JX_ANY",
+    "JX_ARRAY",
+    "JX_BOOLEAN",
+    "JX_INTEGER",
+    "JX_INTERVAL",
+    "JX_IS_NULL",
+    "JX_NUMBER",
+    "JX_TEXT",
+    "JX_TIME",
+    "NUMBER",
+    "OBJECT",
+    "STRING",
+    "TIME",
+    "INTEGER",
+    "detype",
+    "entype",
+    "jx_type_to_json_type",
+    "json2value",
+    "python_type_to_jx_type",
+    "python_type_to_json_type",
+    "quote",
+    "to_jx_type",
+    "value2json",
+    "value_to_jx_type",
+]
 
 logger = delay_import("mo_logs.logger")
 hjson2value = delay_import("hjson.loads")
 
-
 FIND_LOOPS = True  # FIND LOOPS IN DATA STRUCTURES
-SNAP_TO_BASE_10 = False  # Identify floats near a round base10 value (has 000 or 999) and shorten
 CAN_NOT_DECODE_JSON = "Can not decode JSON"
-
 
 true, false, null = True, False, None
 
 _get = object.__getattribute__
-
-
-ESCAPE_DCT = {
-    "\\": "\\\\",
-    '"': '\\"',
-    "\b": "\\b",
-    "\f": "\\f",
-    "\n": "\\n",
-    "\r": "\\r",
-    "\t": "\\t",
-}
-for i in range(0x20):
-    ESCAPE_DCT.setdefault(chr(i), "\\u{0:04x}".format(i))
-
-ESCAPE = re.compile(r'[\x00-\x1f\\"\b\f\n\r\t]')
-
-
-def replace(match):
-    return ESCAPE_DCT[match.group(0)]
-
-
-def quote(s):
-    return '"' + ESCAPE.sub(replace, s) + '"'
-
-
-def float2json(value):
-    """
-    CONVERT NUMBER TO JSON STRING, WITH BETTER CONTROL OVER ACCURACY
-    :param value: float, int, long, Decimal
-    :return: unicode
-    """
-    if is_missing(value):
-        return "null"
-    if not is_finite(value):
-        return "null"
-
-    if value == 0:
-        return "0"
-    try:
-        sign = "-" if value < 0 else ""
-        value = abs(value)
-        sci = value.__format__(".15e")
-        mantissa, str_exp = sci.split("e")
-        digits, more_digits = _snap_to_base_10(mantissa)
-        int_exp = int(str_exp) + more_digits
-        if int_exp > 15:
-            return sign + digits[0] + "." + (digits[1:].rstrip("0") or "0") + "e" + str(int_exp)
-        elif int_exp >= 0:
-            return sign + (digits[: 1 + int_exp] + "." + digits[1 + int_exp :].rstrip("0")).rstrip(".")
-        elif -4 < int_exp:
-            digits = ("0" * (-int_exp)) + digits
-            return sign + (digits[:1] + "." + digits[1:].rstrip("0")).rstrip(".")
-        else:
-            tail = digits[1:].rstrip("0")
-            if not tail:
-                return f"{sign}{digits[0]}e{int_exp}"
-            else:
-                return f"{sign}{digits[0]}.{tail}e{int_exp}"
-    except Exception as e:
-        logger.error("not expected", e)
-
-
-def _snap_to_base_10(mantissa):
-    # TODO: https://lists.nongnu.org/archive/html/gcl-devel/2012-10/pdfkieTlklRzN.pdf
-    digits = mantissa.replace(".", "")
-    if SNAP_TO_BASE_10:
-        f9 = strings.find(digits, "999")
-        f0 = strings.find(digits, "000")
-        if f9 == 0:
-            return "1000000000000000", 1
-        elif f9 < f0:
-            digits = str(int(digits[:f9]) + 1) + ("0" * (16 - f9))
-        else:
-            digits = digits[:f0] + ("0" * (16 - f0))
-    return digits, 0
 
 
 def scrub(value, keep_whitespace=True):
@@ -141,7 +93,7 @@ def value2json(obj, pretty=False, sort_keys=False, keep_whitespace=True):
             return json
         except Exception:
             pass
-        logger.error("Can not encode into JSON: {{value}}", value=str(repr(obj)), cause=e)
+        logger.error("Can not encode into JSON: {value}", value=str(repr(obj)), cause=e)
 
 
 def remove_line_comment(line):
@@ -251,7 +203,7 @@ def json2value(json_string, params=Null, flexible=False, leaves=False):
             column = int(strings.between(c.message, " column ", " ")) - 1
             line = json_string.split("\n")[line_index].replace("\t", " ")
             if column > 20:
-                sample = "..." + line[column - 20 :]
+                sample = "..." + line[column - 20:]
                 pointer = "   " + (" " * 20) + "^"
             else:
                 sample = line

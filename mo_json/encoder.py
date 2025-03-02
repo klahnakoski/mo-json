@@ -12,9 +12,10 @@ import math
 import time
 from datetime import date, datetime, timedelta
 from decimal import Decimal
+from json.encoder import ESCAPE_DCT
 from math import floor
 
-from mo_dots import Data, FlatList, NullType, SLOT, is_data, is_list, from_data
+from mo_dots import Data, FlatList, NullType, SLOT, is_data, is_list, from_data, exists
 from mo_future import (
     PYPY,
     binary_type,
@@ -28,11 +29,12 @@ from mo_future import (
     StringIO,
 )
 from mo_logs import Except
+from mo_logs.strings import quote
 from mo_times import Timer
 from mo_times.dates import Date
 from mo_times.durations import Duration
 
-from mo_json import ESCAPE_DCT, float2json, quote
+from mo_json.utils import float2json
 from mo_json.scrubber import Scrubber
 
 json_decoder = json.JSONDecoder().decode
@@ -107,7 +109,7 @@ def pypy_json_encode(value, pretty=False):
             _dealing_with_problem = False
 
 
-class cPythonJSONEncoder(object):
+class cPythonJSONEncoder:
     def __init__(self, sort_keys=True):
         object.__init__(self)
 
@@ -128,7 +130,7 @@ class cPythonJSONEncoder(object):
             from mo_logs import Log
 
             cause = Except.wrap(cause)
-            Log.warning("problem serializing {{type}}", type=str(repr(value)), cause=cause)
+            Log.warning("problem serializing {type}", type=str(repr(value)), cause=cause)
             raise cause
 
 
@@ -272,6 +274,7 @@ def pretty_json(value):
     scrub = Scrubber().scrub
     return _pretty_json(value, scrub)
 
+
 def _pretty_json(value, scrub):
     try:
         if value is False:
@@ -287,7 +290,7 @@ def _pretty_json(value, scrub):
                     # Data can hold primitives
                     return _pretty_json(value, scrub)
                 items = sort_using_key(value.items(), lambda r: r[0])
-                values = [quote(k) + PRETTY_COLON + _pretty_json(v, scrub) for k, v in items if v != None]
+                values = [quote(k) + PRETTY_COLON + _pretty_json(v, scrub) for k, v in items if exists(v)]
                 if not values:
                     return "{}"
                 elif len(values) == 1:
@@ -333,10 +336,10 @@ def _pretty_json(value, scrub):
                             acc.append(c3)
                         except BaseException:
                             pass
-                            # Log.warning("odd character {{ord}} found in string.  Ignored.",  ord= ord(c)}, cause=g)
+                            # Log.warning("odd character {ord} found in string.  Ignored.",  ord= ord(c)}, cause=g)
                     acc.append(QUOTE)
                     output = "".join(acc)
-                    Log.note("return value of length {{length}}", length=len(output))
+                    Log.note("return value of length {length}", length=len(output))
                     return output
                 except BaseException as f:
                     Log.warning(
@@ -445,10 +448,10 @@ def problem_serializing(value, e=None):
         rep = None
 
     if rep == None:
-        Log.error("Problem turning value of type {{type}} to json", type=typename, cause=e)
+        Log.error("Problem turning value of type {type} to json", type=typename, cause=e)
     else:
         Log.error(
-            "Problem turning value ({{value}}) of type {{type}} to json", value=rep, type=typename, cause=e,
+            "Problem turning value ({value}) of type {type} to json", value=rep, type=typename, cause=e,
         )
 
 
@@ -497,7 +500,7 @@ def unicode_key(key):
     if not isinstance(key, (text, binary_type)):
         from mo_logs import Log
 
-        Log.error("{{key|quote}} is not a valid key", key=key)
+        Log.error("{key|quote} is not a valid key", key=key)
     return quote(str(key))
 
 
