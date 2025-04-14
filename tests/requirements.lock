@@ -1,4 +1,4 @@
-# Tests pass with python 3.8 on 2025-03-02 and with these versions
+# Tests pass with python 3.8 on 2025-04-14 and with these versions
 # pip install --no-deps -r tests/requirements.lock
 beautifulsoup4==4.13.3
 hjson==3.1.0
@@ -10,8 +10,8 @@ mo-kwargs==7.678.25061
 mo-logs==8.678.25061
 mo-math==7.678.25061
 mo-testing==8.674.25037
-mo-threads==6.672.25036
-mo-times==5.678.25061
-pytz==2025.1
+mo-threads==6.681.25075
+mo-times==5.682.25104
+pytz==2025.2
 soupsieve==2.5
 typing_extensions==4.12.2
