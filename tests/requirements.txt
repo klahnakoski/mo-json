@@ -1,4 +1,4 @@
-mo-testing>=8.674.25037
-mo-threads>=6.681.25075
+mo-testing>=8.685.25166
+mo-threads>=6.682.25104
 pytz>=2025.2
-beautifulsoup4>=4.13.3
+beautifulsoup4>=4.13.4
